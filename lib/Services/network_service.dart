@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:light_center/enums.dart';
@@ -7,6 +8,70 @@ import 'package:xml/xml.dart' as xml;
 //const String baseUrl = 'Agregar el servidor al que apunta';
 const String baseUrlDEV = '192.168.100.21:3000';
 const String apiRoute = '/api/light-center';
+
+Future<Map<String, dynamic>> sendHTTPRequest({required String baseUrl, required String endPoint, required HTTPMethod method, Object? body, Map<String, dynamic>? queryParameters}) async {
+  late Response response;
+
+  Map<String, String> headers = {
+    'User-Agent': 'Flutter App'
+  };
+
+  headers['Accept'] = body == null ? '*/*' : 'application/json';
+
+  if (body != null) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  late Uri requestUri;
+
+  if (baseUrl.substring(0,baseUrl.indexOf(":")).contains('s')) {
+    requestUri = Uri.https(baseUrl.substring(baseUrl.indexOf(":") + 3), endPoint, queryParameters);
+  } else {
+    requestUri = Uri.http(baseUrl.substring(baseUrl.indexOf(":") + 3), endPoint, queryParameters);
+  }
+
+  print(requestUri);
+
+  Duration timeOutDuration = const Duration(seconds: 10);
+
+  switch(method) {
+    case HTTPMethod.get:
+      response = await http.get(requestUri, headers: headers).timeout(timeOutDuration);
+      break;
+
+    case HTTPMethod.post:
+      response = await http.post(requestUri, headers: headers, body: convert.jsonEncode(body)).timeout(timeOutDuration);
+      break;
+
+    case HTTPMethod.patch:
+      response = await http.patch(requestUri, headers: headers, body: convert.jsonEncode(body)).timeout(timeOutDuration);
+      break;
+
+    case HTTPMethod.delete:
+      response = await http.delete(requestUri, headers: headers, body: convert.jsonEncode(body)).timeout(timeOutDuration);
+      break;
+
+    default: return {
+      'Error': "El método HTTP '${method.toString()}', es inválido",
+      'Path': requestUri.path
+    };
+  }
+
+  String auxResponse = response.body.trim();
+  /*print('El cuelpo');
+  print(auxResponse);
+  print(auxResponse[0]);
+  print(auxResponse[auxResponse.length - 1]);*/
+
+  if (auxResponse[0] == '[' && auxResponse[auxResponse.length - 1] == ']') {
+    return {
+      'list': convert.jsonDecode(auxResponse)
+    };
+  }
+  //print(await convert.jsonDecode(auxResponse));
+
+  return await convert.jsonDecode(auxResponse) as Map<String, dynamic>;
+}
 
 
 Future<Map<String, dynamic>> sendRequest({required String endPoint, required HTTPMethod method, Object? body}) async {

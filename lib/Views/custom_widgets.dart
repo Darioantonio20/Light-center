@@ -5,7 +5,9 @@ import 'package:light_center/BusinessLogic/Controllers/schedule_controller.dart'
 import 'package:light_center/BusinessLogic/Cubits/User/user_cubit.dart';
 import 'package:light_center/Data/Models/User/user_model.dart';
 import 'package:light_center/Data/Models/event_model.dart';
+import 'package:light_center/Services/navigation_service.dart';
 import 'package:light_center/colors.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 
 AppBar commonAppBar({
@@ -292,5 +294,132 @@ GridView getScheduleGrid({required List<dynamic> schedule, required DateTime sel
           ),
         );
       }
+  );
+}
+
+Drawer commonDrawer() {
+  return Drawer(
+    child: ListView(
+      physics: const ClampingScrollPhysics(),
+      children: [
+
+        const Padding(
+          padding: EdgeInsets.only(
+            top: 10,
+            bottom: 10
+          ),
+          child: Center(
+              child: Text('Menú',
+                style:TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold
+                ),
+              )
+          ),
+        ),
+
+        tappableListTileItem(
+            icon: Icons.person,
+            title: 'Mi Perfil',
+            action: () {
+              NavigationService.pop();
+              NavigationService.showSnackBar(message: 'No implementado');
+            }
+        ),
+
+        const Divider(),
+
+        tappableListTileItem(
+            icon: Icons.book,
+            title: 'Mis Citas',
+            action: () {
+              NavigationService.pop();
+              NavigationService.showSnackBar(message: 'No implementado');
+            }
+        ),
+
+        const Divider(),
+
+        tappableListTileItem(
+            icon: Icons.attach_money,
+            title: 'Mis Pagos',
+            action: () {
+              NavigationService.pop();
+              NavigationService.showSnackBar(message: 'No implementado');
+            }
+        ),
+
+        const Divider(),
+
+        tappableListTileItem(
+            icon: Icons.local_offer,
+            title: 'Promociones',
+            action: () => NavigationService.pushNamed(NavigationService.news)
+        ),
+
+        const Divider(),
+
+        tappableListTileItem(
+            icon: Icons.book,
+            title: 'Orientación Nutrimental',
+            action: () => NavigationService.pushNamed(NavigationService.nutritionalOrientation)
+        ),
+
+        const Padding(
+          padding: EdgeInsets.only(
+              top: 50,
+              bottom: 20
+          ),
+          child: Center(
+              child: Text('Contáctanos',
+                style:TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold
+                ),
+              )
+          ),
+        ),
+
+        ListView(
+          shrinkWrap: true,
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20
+          ),
+          children: [
+            FilledButton.icon(
+                onPressed: () => NavigationService.makeCall(),
+                icon: const Icon(Icons.phone),
+                label: const Text('Llamada')),
+
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 15,
+                bottom: 15
+              ),
+              child: OutlinedButton.icon(
+                  onPressed: () => NavigationService.openWhatsappLink(),
+                  icon: const Icon(FontAwesomeIcons.whatsapp, color: Colors.green,),
+                  label: const Text('Whatsapp')),
+            ),
+
+            OutlinedButton.icon(
+                onPressed: () => NavigationService.sendEmail(),
+                icon: const Icon(FontAwesomeIcons.envelope, color: Colors.blue),
+                label: const Text('Correo')),
+          ],
+        )
+      ],
+    ),
+  );
+}
+
+GestureDetector tappableListTileItem({required IconData icon, required String title, required VoidCallback action}) {
+  return GestureDetector(
+    onTap: action,
+    child: ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+    ),
   );
 }

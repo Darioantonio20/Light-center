@@ -1,21 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:light_center/BusinessLogic/Cubits/User/user_cubit.dart';
 import 'package:light_center/Services/navigation_service.dart';
 import 'package:light_center/Services/network_service.dart';
 import 'package:light_center/Views/custom_widgets.dart';
 import 'package:light_center/colors.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 
 class Dashboard extends StatelessWidget {
   const Dashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    String nombre = 'Jesús Eduardo Martínez García';
-    String telefono = '961 307 9673';
+    UserCubit _userCubit = BlocProvider.of<UserCubit>(context);
+
     return Scaffold(
       appBar: commonAppBar(),
-      floatingActionButton: FloatingActionButton(
+      drawer: commonDrawer(),
+      floatingActionButtonLocation: ExpandableFab.location,
+      floatingActionButton: ExpandableFab(
+          distance: 130,
+          overlayStyle: ExpandableFabOverlayStyle(
+              blur: 10
+          ),
+          type: ExpandableFabType.up,
+          openButtonBuilder: RotateFloatingActionButtonBuilder(
+            fabSize: ExpandableFabSize.large,
+            child: const Icon(
+              Icons.quick_contacts_dialer,
+              semanticLabel: 'Ayuda',
+            ),
+            foregroundColor: Colors.deepPurple,
+            shape: const CircleBorder(),
+          ),
+          closeButtonBuilder: DefaultFloatingActionButtonBuilder(
+            child: const Icon(Icons.close),
+            fabSize: ExpandableFabSize.large,
+            shape: const CircleBorder(),
+          ),
+          children: [
+            FloatingActionButton.large(
+              tooltip: 'Enviar correo',
+              onPressed: () => NavigationService.sendEmail(),
+              child: const Icon(FontAwesomeIcons.envelope, color: Colors.blue, size: 50),
+            ),
+
+            FloatingActionButton.large(
+              tooltip: 'Link de Whatsapp',
+              onPressed: () => NavigationService.openWhatsappLink(),
+              child: const Icon(FontAwesomeIcons.whatsapp, color: Colors.green, size: 50),
+            ),
+
+            FloatingActionButton.large(
+              tooltip: 'Llamar',
+              onPressed: () => NavigationService.makeCall(),
+              child: Icon(Icons.phone, color: LightCenterColors.mainPurple, size: 50),
+            ),
+          ]
+      ),
+      /*floatingActionButton: FloatingActionButton.large(
         onPressed: () {},
-        child: const Icon(Icons.call),),
+        child: const Icon(Icons.call)),*/
       body: SingleChildScrollView(
         physics: const ClampingScrollPhysics(),
         child: Column(
@@ -40,13 +86,13 @@ class Dashboard extends StatelessWidget {
                         ),
                       ),
 
-                      Text(nombre,
+                      Text('Cambiar por cubit',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(telefono,
+                      Text('Agregar estados',
                           style: const TextStyle(
                               fontWeight: FontWeight.bold,
                           )
@@ -68,7 +114,7 @@ class Dashboard extends StatelessWidget {
               ),
               children: [
                 GestureDetector(
-                  onTap: null,
+                  onTap: () => NavigationService.pushNamed(NavigationService.homeScreen),
                   child: Card(
                     color: LightCenterColors.mainPurple,
                     child: SizedBox(

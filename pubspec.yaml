@@ -51,6 +51,9 @@ dependencies:
   xml: ^6.4.2
   video_player: ^2.7.2
   lottie: ^2.6.0
+  url_launcher: ^6.1.14
+  font_awesome_flutter: ^10.6.0
+  flutter_expandable_fab: ^2.0.0
 
 dev_dependencies:
   flutter_test:

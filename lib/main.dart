@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:isar/isar.dart';
+import 'package:light_center/BusinessLogic/Cubits/Home/home_cubit.dart';
 import 'package:light_center/BusinessLogic/Cubits/Location/location_cubit.dart';
 import 'package:light_center/BusinessLogic/Cubits/User/user_cubit.dart';
 import 'package:light_center/BusinessLogic/Cubits/Treatment/treatment_cubit.dart';
@@ -12,6 +13,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:light_center/colors.dart';
 import 'package:light_center/Data/Repositories/user_repository.dart';
 import 'package:light_center/Data/Repositories/treatment_repository.dart';
+
+import 'Views/dashboard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +42,7 @@ class _LightCenterState extends State<LightCenter> {
           BlocProvider<UserCubit>(create: (_) => UserCubit(UserRepository(widget.isar))),
           BlocProvider<TreatmentCubit>(create: (_) => TreatmentCubit(TreatmentRepository(widget.isar))),
           BlocProvider<LocationCubit>(create: (_) => LocationCubit(LocationRepository(widget.isar))),
+          BlocProvider<HomeCubit>(create: (_) => HomeCubit()),
         ],
         child: MaterialApp(
           title: 'Light Center',

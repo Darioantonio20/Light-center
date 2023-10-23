@@ -91,10 +91,16 @@ class NutritionalOrientation extends StatelessWidget {
 }
 
 Future<List<String>> getNutritionalOrientation() async {
-  Map<String, dynamic> response = await sendRequest(
-    endPoint: '/nutritional',
-    method: HTTPMethod.get,
-  );
+  Map<String, dynamic> response = await sendHTTPRequest(
+      baseUrl: 'https://picsum.photos',
+      endPoint: '/v2/list',
+      queryParameters: {'page': '2', 'limit': '8'},
+      method: HTTPMethod.get);
 
-  return List<String>.from(response['Links']);
+  List<String> links = [];
+
+  for (Map<String, dynamic> picture in response['list']) {
+    links.add(picture['download_url']);
+  }
+  return links;
 }

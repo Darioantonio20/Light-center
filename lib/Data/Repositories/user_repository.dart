@@ -1,3 +1,4 @@
+import 'package:light_center/Data/Models/Treatment/treatment_model.dart';
 import 'package:light_center/Data/Models/User/user_model.dart';
 import 'package:light_center/Services/network_service.dart';
 import 'package:light_center/enums.dart';
@@ -62,6 +63,26 @@ class UserRepository {
     return await isar.writeTxn(() async {
       if (await isar.collection<User>().put(newUser) > -1) {
         await newUser.location.save();
+        return true;
+      }
+
+      return false;
+    });
+  }
+
+  Future<bool> updateUserForValidation(User newUser) async {
+    return await isar.writeTxn(() async {
+      /*for (int i = 0; i < newUser.treatments.length; i++) {
+        int resultId = await isar.collection<Treatment>().put(newUser.treatments.elementAt(i));
+        if (resultId < 1) {
+          return false;
+        } else {
+          newUser.treatments.elementAt(i).id = resultId;
+        }
+      }*/
+
+      if (await isar.collection<User>().put(newUser) > -1) {
+        await newUser.treatments.save();
         return true;
       }
 

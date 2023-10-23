@@ -56,7 +56,7 @@ class UserCubit extends Cubit<UserState> {
           NavigationService.showSnackBar(message: 'Su código ha sido verificado. Ingresando al sistema...');
 
           Future.delayed(const Duration(seconds: 4), (){
-            NavigationService.pushReplacementNamed(NavigationService.homeScreen, arguments: HomeArguments(userRepository: _repository));
+            NavigationService.pushReplacementNamed(NavigationService.homeScreen);
             //NavigationService.pushReplacementNamed(NavigationService.treatmentSelection, arguments: TreatmentSelectionArguments(isar: _repository.isar));
           });
 
@@ -88,7 +88,7 @@ class UserCubit extends Cubit<UserState> {
         //user.currentTreatment = data['DesiredTreatment'];
         //user.appointments = getAppointmentsFromJson(data['Appointments']);
         if (await _repository.updateUser(user)) {
-          NavigationService.pushReplacementNamed(NavigationService.homeScreen, arguments: HomeArguments(userRepository: _repository));
+          NavigationService.pushReplacementNamed(NavigationService.homeScreen);
           //NavigationService.pushReplacementNamed(NavigationService.treatmentSelection, arguments: TreatmentSelectionArguments(isar: _repository.isar));
           return true;
         } else {
@@ -125,9 +125,14 @@ class UserCubit extends Cubit<UserState> {
     }
   }
 
-  Future<void> updateUserForLogin({required User user}) async {
+  Future<void> updateUserForLogin({required User user, bool isValidation = false}) async {
     try {
-      await _repository.updateUserForLogin(user);
+      if (isValidation == false) {
+        await _repository.updateUserForLogin(user);
+      } else {
+        await _repository.updateUserForValidation(user);
+        await NavigationService.pushReplacementNamed(NavigationService.dashboardScreen);
+      }
       emit(UserUpdated());
     } catch (e) {
       emit(UserError('Ocurrió un error al actualizar el usuario: $e'));

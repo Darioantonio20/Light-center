@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:light_center/BusinessLogic/Cubits/Location/location_cubit.dart';
@@ -18,16 +20,17 @@ late LocationCubit locationCubit;
 Location? selectedLocation;
 
 void fillForm(User user) async {
+  if (user.id > 0) {
+    await user.location.load();
+    await user.treatments.load();
+  }
+
   if (user.whatsappNumber != null) {
     usernameController.text = user.whatsappNumber!;
   }
 
   if (user.code != null) {
     passwordController.text = user.code!;
-  }
-
-  if (user.location.value != null) {
-    selectedLocation = user.location.value!;
   }
 
   if (user.location.value != null) {
@@ -49,9 +52,12 @@ void validateUser ({required User user}) async {
       soapAction: 'http://tempuri.org/SPA_VALIDAPACIENTE',
       envelopeName: 'SPA_VALIDAPACIENTE',
       content: {
-        'DSNDataBase': selectedLocation!.code,
-        'NoWhatsAPP': '521${usernameController.text}'
+        'DSNDataBase': user.location.value!.code,
+        'NoWhatsAPP': '521${user.whatsappNumber}'
       });
+
+  //print("Respuesta validacion");
+  //print(data);
   
   if (data.contains('ERR:') || data.length == 1) {
     if (data.length == 1) {
@@ -64,28 +70,42 @@ void validateUser ({required User user}) async {
         title: 'Error al ingresar',
         content: data);
   } else {
+
+    ///Ask about login code validation
     data = data.substring(data.indexOf("€") + 1);
     List<String> datosPaciente = data.split(",");
+    print(datosPaciente);
+
     late Treatment currentTreatment;
+
     try {
       user.name = trimUserData(datosPaciente.where((String element) => element.contains('nombrepaciente')).first)!;
-      await userCubit.updateUser(user);
-      //await user.treatments.load();
-      //print("Se cargan los tratamientos");
       List<Treatment> userTreatments = await user.treatments.filter().findAll();
-      for (Treatment userTreatment in userTreatments) {
-        //Treatment currentTreatment = await treatmentCubit.getTreatmentByOrderId(userTreatment.id) ?? Treatment();
-        currentTreatment = await user.treatments.filter().orderIdEqualTo(userTreatment.orderId).findFirst() ?? Treatment();
+
+      // Checks if there's more than one treatment in response (NEED TO ADD)
+      if (userTreatments.isEmpty) {
+        currentTreatment = Treatment();
         currentTreatment.name = trimUserData(datosPaciente.where((String element) => element.contains('descrippaquetecorporal')).first)!;
         currentTreatment.orderId = int.parse(trimUserData(datosPaciente.where((String element) => element.contains('idpedido')).first)!);
         currentTreatment.productId = int.parse(trimUserData(datosPaciente.where((String element) => element.contains('idpaquete')).first)!);
-        currentTreatment.lastDateToSchedule = DateTime.parse(trimUserData(datosPaciente.where((String element) => element.contains('vigenciapaquete')).first)!);
-        //user.treatments.reset();
-        user.treatments.add(currentTreatment);
-        await user.treatments.save();
-        //await userCubit.updateUser(user);
+        currentTreatment.lastDateToSchedule = parseDateTimeFromResponse(trimUserData(datosPaciente.where((String element) => element.contains('vigenciapaquete')).first)!);
+        await treatmentCubit.updateTreatment(currentTreatment);
+        user.treatments.add(await treatmentCubit.getTreatmentByOrderId(currentTreatment.orderId!) ?? currentTreatment);
+      } else {
+        for (Treatment userTreatment in userTreatments) {
+          currentTreatment = await user.treatments.filter().orderIdEqualTo(userTreatment.orderId).findFirst() ?? Treatment();
+          currentTreatment.name = trimUserData(datosPaciente.where((String element) => element.contains('descrippaquetecorporal')).first)!;
+          currentTreatment.orderId = int.parse(trimUserData(datosPaciente.where((String element) => element.contains('idpedido')).first)!);
+          currentTreatment.productId = int.parse(trimUserData(datosPaciente.where((String element) => element.contains('idpaquete')).first)!);
+          //currentTreatment.lastDateToSchedule = DateTime.parse(trimUserData(datosPaciente.where((String element) => element.contains('vigenciapaquete')).first)!);
+          currentTreatment.lastDateToSchedule = parseDateTimeFromResponse(trimUserData(datosPaciente.where((String element) => element.contains('vigenciapaquete')).first)!);
+          user.treatments.add(await treatmentCubit.getTreatmentByOrderId(currentTreatment.orderId!) ?? currentTreatment);
+          user.treatments.add(currentTreatment);
+        }
       }
+      await userCubit.updateUserForLogin(user: user, isValidation: true);
     } catch(e) {
+      print("Error en validacion");
       print(e);
       userCubit.emit(UserError(e.toString()));
     }
@@ -94,4 +114,18 @@ void validateUser ({required User user}) async {
 
 String? trimUserData(String data) {
   return data.substring(data.indexOf("=") + 1);
+}
+
+DateTime? parseDateTimeFromResponse(String dateString) {
+  print("Parseando");
+  print(dateString);
+  try {
+    if (dateString.isNotEmpty) {
+      return DateTime.parse(dateString);
+    }
+
+    return null;
+  } catch (e) {
+    return null;
+  }
 }

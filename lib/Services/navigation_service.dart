@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:light_center/Views/dashboard.dart';
 import 'package:light_center/Views/login.dart';
 import 'package:light_center/Views/home.dart';
 import 'package:light_center/Views/news.dart';
 import 'package:light_center/Views/nutritional_orientation.dart';
 import 'package:light_center/Views/splash.dart';
 import 'package:light_center/Views/treatment_selection.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class NavigationService {
   static const String splashScreen = "/";
   static const String loginScreen = '/login';
+  static const String dashboardScreen = '/dashboard';
   static const String homeScreen = '/home';
   static const String treatmentSelection = '/treatmentSelection';
   static const String news = '/news';
@@ -23,6 +26,7 @@ class NavigationService {
   final Map<String, Widget Function(BuildContext)> routes = {
     splashScreen: (context) => const Splash(),
     loginScreen: (context) => const Login(),
+    dashboardScreen: (context) => const Dashboard(),
     treatmentSelection: (context) => const TreatmentSelection(),
     homeScreen: (context) => const HomePage(),
     news: (context) => const News(),
@@ -108,5 +112,44 @@ class NavigationService {
         ],
       ),
     );
+  }
+
+  /*static void callToPhone(String phoneNumber) async {
+    if (await canLaunchUrl('')){
+      await launchUrl(url)
+    }
+  }*/
+  String _rocencranEmail = 'ventas@predictionsoft.com.mx';
+
+  static void makeCall() async {
+    Uri requestUri = Uri(
+      scheme: 'tel',
+      path: '5219995514492'
+    );
+
+    if (await canLaunchUrl(requestUri)){
+      await launchUrl(requestUri);
+    }
+  }
+
+  static void openWhatsappLink() async {
+    Uri requestUri = Uri.https('wa.me', '/5219995514492');
+    if (await canLaunchUrl(requestUri)){
+      await launchUrl(
+          requestUri,
+          mode: LaunchMode.inAppWebView
+      );
+    }
+  }
+
+  static void sendEmail() async {
+    Uri requestUri = Uri(
+      scheme: 'mailto',
+      path: 'lightcenter.merida.oficial@gmail.com'
+    );
+
+    if (await canLaunchUrl(requestUri)){
+      await launchUrl(requestUri);
+    }
   }
 }
