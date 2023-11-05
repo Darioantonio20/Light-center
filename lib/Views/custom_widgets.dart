@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:light_center/BusinessLogic/Controllers/schedule_controller.dart';
-import 'package:light_center/BusinessLogic/Cubits/User/user_cubit.dart';
 import 'package:light_center/Data/Models/User/user_model.dart';
 import 'package:light_center/Data/Models/event_model.dart';
 import 'package:light_center/Services/navigation_service.dart';
@@ -12,8 +11,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 AppBar commonAppBar({
   Widget? title,
-  bool showReload = false,
-  UserCubit? userCubit}) {
+  }) {
   return AppBar(
     title: title ?? Row(
       mainAxisSize: MainAxisSize.min,
@@ -40,14 +38,7 @@ AppBar commonAppBar({
       ),
     ),
     backgroundColor: Colors.deepPurpleAccent,
-    centerTitle: true,
-    actions: showReload == false ? [] : [
-      IconButton(
-        onPressed: userCubit!.reloadUserData,
-        icon: const Icon(Icons.update),
-        tooltip: 'Recargar la información del usuario',
-      )
-    ],
+    centerTitle: true
   );
 }
 
@@ -152,6 +143,32 @@ SizedBox invalidStateScreen({required BuildContext context}) {
           Padding(
             padding: EdgeInsets.only(top: 16),
             child: Text('El estado no es válido'),
+          )
+        ],
+      ),
+    ),
+  );
+}
+
+SizedBox invalidScreen({required BuildContext context}) {
+  return SizedBox(
+    width: MediaQuery.of(context).size.width,
+    child: const Padding(
+      padding: EdgeInsets.only(
+          left: 20.0,
+          right:20.0
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.close,
+            color: Colors.orange,
+            size: 60,
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: 16),
+            child: Text('El contenido no pudo ser cargado.'),
           )
         ],
       ),
@@ -281,10 +298,11 @@ GridView getScheduleGrid({required List<dynamic> schedule, required DateTime sel
           width: MediaQuery.of(context).size.width * 0.01,
           child: FilledButton(
               onPressed: () {
+                print("Presionando un botón");
                 if(schedule.runtimeType == List<Event>) {
                   manageScheduledAppointment(context: context, scheduledDate: currentDateTime, user: user);
                 } else {
-                  //scheduleAppointment(context: context, day: currentDateTime, user: user);
+                  scheduleAppointment(context: context, day: currentDateTime, user: user);
                 }
               },
               child: Text(
@@ -360,7 +378,7 @@ Drawer commonDrawer() {
         const Divider(),
 
         tappableListTileItem(
-            icon: Icons.book,
+            icon: Icons.restaurant,
             title: 'Orientación Nutrimental',
             action: () => NavigationService.pushNamed(NavigationService.nutritionalOrientation)
         ),
@@ -381,8 +399,9 @@ Drawer commonDrawer() {
         ),
 
         ListView(
+          physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
-          padding: EdgeInsets.only(
+          padding: const EdgeInsets.only(
             left: 20,
             right: 20
           ),

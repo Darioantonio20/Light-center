@@ -7,19 +7,33 @@ import 'package:light_center/Views/custom_widgets.dart';
 import 'package:light_center/colors.dart';
 import 'package:light_center/BusinessLogic/Controllers/schedule_controller.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:light_center/Data/Models/User/user_model.dart';
+//import 'package:light_center/Data/Models/Treatment/treatment_model.dart';
 
 class Schedule extends StatelessWidget {
-  final User user;
-  const Schedule({super.key, required this.user});
+  //final Treatment treatment;
+  //const Schedule({super.key, required this.treatment});
+  const Schedule({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<DateTime>>(
-        future: getAvailableDays(user: user),
-        builder: (BuildContext context, AsyncSnapshot<List<DateTime>> snapshot) {
-          if (snapshot.hasData) {
-            availableDates = snapshot.data!;
+  /*Widget build(BuildContext context) {
+    userCubit = BlocProvider.of<UserCubit>(context);
+    userCubit.getAvailableDates();
+
+    return BlocBuilder<UserCubit, UserState>(
+        builder: (context, state) {
+          if (state is UserUpdated || state is UserSaved) {
+            userCubit.getAvailableDates();
+            return updatingScreen(context: context);
+          }
+
+          if (state is UserLoading) {
+            return loadingScreen(context: context);
+          }
+
+          if (state is UserLoaded) {
+            selectedDay = ValueNotifier<DateTime?>(null);
+            focusedDay = ValueNotifier<DateTime>(getFirstDateToSchedule(appointments: state.user.appointments));
+            eventsList = generateEventsList(user:  state.user);
 
             return Column(
               children: [
@@ -40,18 +54,17 @@ class Schedule extends StatelessWidget {
                       builder: (context, iFocusedDay , _) {
                         return TableCalendar<Event>(
                           firstDay: DateTime.now(),
-                          //lastDay: getLastDateToSchedule(validity: user.treatments.last.lastDateToSchedule),
-                          lastDay: availableDates.last,
+                          lastDay: getLastDateToSchedule(appointments: state.user.appointments),
                           focusedDay: iFocusedDay,
                           startingDayOfWeek: StartingDayOfWeek.monday,
                           locale: 'es-MX',
                           enabledDayPredicate: (DateTime date) {
-                            return (date.weekday != DateTime.saturday && date.weekday != DateTime.sunday && availableDates.where((element) => isSameDay(element, date)).isNotEmpty);
+                            return date.weekday != DateTime.saturday && date.weekday != DateTime.sunday;
                           },
-                          /*eventLoader: (date) {
+                          eventLoader: (date) {
                             return eventsList
                                 .where((event) => DateUtils.isSameDay(event.dateTime, date)).toList();
-                          },*/
+                          },
                           selectedDayPredicate: (day) {
                             return isSameDay(selectedDay.value, day);
                           },
@@ -59,7 +72,7 @@ class Schedule extends StatelessWidget {
                           onDaySelected: (newSelectedDay, newFocusedDay) {
                             selectedDay.value = newSelectedDay;
                             focusedDay.value = newFocusedDay;
-                            /*getDaySchedule(day: selectedDay.value!).then((daySchedule) {
+                            getDaySchedule(day: selectedDay.value!).then((daySchedule) {
                               if (daySchedule.where((element) => element.toLowerCase().contains('error')).toList().isNotEmpty) {
                                 NavigationService.showSnackBar(message: 'Ocurrió un error al cargar los horarios.');
                               } else {
@@ -67,48 +80,42 @@ class Schedule extends StatelessWidget {
                                     context: context,
                                     events: getEventsForDay(),
                                     schedule: daySchedule,
-                                    user: user
-                                );
-                              }
-                            });*/
-                            getDaySchedule(day: selectedDay.value!, user: user).then((daySchedule) {
-                              if (daySchedule.where((element) => element.toLowerCase().contains('error')).toList().isNotEmpty) {
-                                NavigationService.showSnackBar(message: 'Ocurrió un error al cargar los horarios.');
-                              } else {
-                                showModal(
-                                    context: context,
-                                    events: getEventsForDay(),
-                                    schedule: daySchedule,
-                                    user: user
+                                    user: state.user
                                 );
                               }
                             });
                           },
                           headerStyle: const HeaderStyle(
-                              formatButtonVisible: false,
-                              titleCentered: true
+                            formatButtonVisible: false,
+                            titleCentered: true
                           ),
                           calendarStyle: CalendarStyle(
-                              markerDecoration: BoxDecoration(
-                                  color: LightCenterColors.mainBrown,
-                                  shape: BoxShape.circle),
-                              selectedDecoration: BoxDecoration(
-                                  color: LightCenterColors.mainPurple,
-                                  shape: BoxShape.circle),
-                              todayDecoration: BoxDecoration(
-                                  color: LightCenterColors.backgroundPurple,
-                                  shape: BoxShape.circle)
+                            markerDecoration: BoxDecoration(
+                                color: LightCenterColors.mainBrown,
+                                shape: BoxShape.circle),
+                            selectedDecoration: BoxDecoration(
+                                color: LightCenterColors.mainPurple,
+                                shape: BoxShape.circle),
+                            todayDecoration: BoxDecoration(
+                                color: LightCenterColors.backgroundPurple,
+                                shape: BoxShape.circle)
                           ),
                         );
                       }),
                 )
               ],
             );
-          } else if (snapshot.hasError) {
-            return errorScreen(context: context, errorMessage: 'Ocurrió un error al obtener las fechas disponibles');
           }
-          return loadingScreen(context: context);
+
+          if (state is UserError) {
+            return errorScreen(context: context, errorMessage: state.errorMessage);
+          }
+
+          return invalidStateScreen(context: context);
         }
     );
+  }*/
+  Widget build(BuildContext context) {
+    return const Center();
   }
 }

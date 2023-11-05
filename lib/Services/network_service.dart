@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:light_center/enums.dart';
@@ -30,7 +29,7 @@ Future<Map<String, dynamic>> sendHTTPRequest({required String baseUrl, required 
     requestUri = Uri.http(baseUrl.substring(baseUrl.indexOf(":") + 3), endPoint, queryParameters);
   }
 
-  print(requestUri);
+  //print(requestUri);
 
   Duration timeOutDuration = const Duration(seconds: 10);
 
@@ -198,7 +197,7 @@ Future<String> sendSOAPRequest({required String soapAction, required String enve
       .join('\n');
 
   //print('result');
-  print(textual);
+  //print(textual);
 
   return textual;
 }

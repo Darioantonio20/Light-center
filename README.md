@@ -8,6 +8,8 @@ Flutter Localizations (incluído en el SDK): Para agregar el idioma español a l
 
 [Dart XML](https://pub.dev/packages/xml): Para facilitar el manejo de documentos XML en las solicitudes SOAP con el Web Service
 
+[easy_pdf_viewer](https://pub.dev/packages/easy_pdf_viewer): Para visualizar archivos PDF desde el interior de la app (ideal cuando los usuarios no tienen una aplicación para lectura de estos archivos).
+
 [flutter_expandable_fab](https://pub.dev/packages/flutter_expandable_fab): Para agregar el FAB animado sin escribir tanto código
 
 [Flutter Spinkit](https://pub.dev/packages/flutter_spinkit): Para agregar Widgets adicionales
@@ -56,6 +58,7 @@ Esta carpeta contiene todos los elementos visuales (pantallas de la aplicación)
 Dentro de la carpeta lib se podrán encontrar los siguientes archivos:
 - colors: Actualmente, una extension para la clase Colors de Material Design, el objetivo de este archivo es proveer de forma sencilla los colores de la empresa, los cuales se utilizarán en la aplicación
 - enums: Actualmente, una forma de agregar identificadores a la sección de comunicación HTTP (dicha función puede ser eliminada ya que la comunicación se realiza mediante el protocolo SOAP 1.1)
+- extension: Actualmente, un archivo para agregar extensiones a clases predeterminadas tales como String, etc.
 - main: Entry point de la aplicación, si se elimina la aplicación no funcionará por lo cual este archivo *no debe ser borrado*
 
 Cuando se actualice o agregue un modelo, se debe correr el siguiente comando: `dart run build_runner build --delete-conflicting-outputs`.

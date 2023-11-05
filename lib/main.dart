@@ -54,6 +54,7 @@ class _LightCenterState extends State<LightCenter> {
               )
           ),
           initialRoute: '/',
+          //home: const Dashboard(),
           navigatorKey: navigationService.getKey(),
           routes: navigationService.routes,
           localizationsDelegates: const [

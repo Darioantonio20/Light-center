@@ -7,6 +7,7 @@ import 'package:light_center/Services/network_service.dart';
 import 'package:light_center/Views/custom_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:light_center/colors.dart';
+import 'package:light_center/enums.dart';
 import 'package:jiffy/jiffy.dart';
 
 List<Event> eventsList = [];
@@ -16,7 +17,6 @@ Map<DateTime, List> events = {};
 late final ValueNotifier<List<Event>> selectedEvents;
 late ValueNotifier<DateTime?> selectedDay;
 late ValueNotifier<DateTime> focusedDay;
-List<DateTime> availableDates = [];
 
 /*DateTime getFirstDateToSchedule({required Appointments? appointments}) {
   if (appointments != null) {
@@ -27,48 +27,18 @@ List<DateTime> availableDates = [];
     }
   }
   return DateTime.now();
-}*/
+}
 
-Future<List<DateTime>> getAvailableDays({required User user}) async {
-  await user.treatments.load();
-
-  String data = await sendSOAPRequest(
-      soapAction: 'http://tempuri.org/SPA_FECHASDISPONIBLES',
-      envelopeName: 'SPA_FECHASDISPONIBLES',
-      content: {
-        'DSNDataBase': user.location.value!.code,
-        'NoWhatsAPP': '521${user.whatsappNumber}',
-        'EXTERNAL_Idref_pedidospresup': user.treatments.last.orderId
-      }
-  );
-  focusedDay = ValueNotifier<DateTime>(DateTime.now());
-  selectedDay = ValueNotifier<DateTime>(DateTime.now());
-  if (data.contains("ERR:")) {
-    return [];
-  }
-
-  //print(data);
-  data = data.substring(0, data.lastIndexOf(","));
-
-  List<DateTime> dates = [];
-
-  for (String date in data.split(",")) {
-    try {
-      dates.add(Jiffy.parse(date.trim(), pattern: 'MM/dd/yyyy').dateTime);
-    } catch(e) {
-      print('Error \n: $e');
+DateTime getLastDateToSchedule({required Appointments? appointments}) {
+  if (appointments != null) {
+    if (appointments.lastDateToSchedule != null) {
+      return appointments.lastDateToSchedule!;
     }
   }
-
-  dates.sort((a,b) => a.compareTo(b));
-  return dates;
+  return DateTime.now();
 }
 
-DateTime getLastDateToSchedule({required DateTime? validity}) {
-  return validity ?? DateTime.now();
-}
-
-/*List<Event> generateEventsList({required User user}) {
+List<Event> generateEventsList({required User user}) {
   List<Event> eventsList = [];
   if (user.appointments?.scheduledAppointments != null) {
     List<String> scheduledList = user.appointments!.scheduledAppointments ?? [];
@@ -97,39 +67,31 @@ List<Event> getEventsForDay() {
   return eventsList.where((event) => DateUtils.isSameDay(event.dateTime, selectedDay.value)).toList();
 }
 
-Future<List<String>> getDaySchedule({required DateTime day, required User user}) async {
-  try {
-    String data = await sendSOAPRequest(
-        soapAction: 'http://tempuri.org/SPA_HORASDISPONIBLES',
-        envelopeName: 'SPA_HORASDISPONIBLES',
-        content: {
-          'DSNDataBase': user.location.value!.code,
-          'NoWhatsAPP': '521${user.whatsappNumber}',
-          'EXTERNAL_FechaCandidata': DateFormat("dd/MM/yyyy").format(day).toString()
-        }
-    );
-    print(data);
+/*List<String> getDaySchedule() {
+  sendRequest(
+      endPoint: '/day-schedule',
+      method: HTTPMethod.post,
+      body: {'day': DateFormat.yMMMMd('es-MX').format(selectedDay.value!)}
+  );
 
-    if (data.contains('ERR:')) {
+  return [];
+}*/
+
+Future<List<String>> getDaySchedule({required DateTime day}) async {
+  try {
+    Map<String, dynamic> data = await sendRequest(
+        endPoint: '/day-schedule',
+        method: HTTPMethod.post,
+        body: {'day': DateFormat('dd-MM-yyyy').format(selectedDay.value!)}
+    );
+    if (data.containsKey('Error')) {
       return [
         'Ocurrió un error al cargar los horarios',
-        data.replaceAll("ERR: ", ""),
+        data['Eror'],
         'Si el error persiste, favor de notificar a LightCenter'
       ];
     } else {
-      data = data.substring(0, data.lastIndexOf(","));
-      List<String> hours = [];
-      //return List<String>.from(data);
-      for (String hour in data.split(",")) {
-        hour = hour.trim();
-        if (hour.length == 1) {
-          hour = "0$hour:00";
-        } else {
-          hour = "$hour:00";
-        }
-        hours.add(hour);
-      }
-      return hours;
+      return List<String>.from(data['Schedule']);
     }
   } catch (e) {
     return [
@@ -140,11 +102,10 @@ Future<List<String>> getDaySchedule({required DateTime day, required User user})
   }
 }
 
-void scheduleAppointment({required BuildContext context, required DateTime day, required User user}) {
+/*void scheduleAppointment({required BuildContext context, required DateTime day, required User user}) {
   int appointmentsInWeek = 0;
 
-  //for (String appointment in user.appointments!.scheduledAppointments!) {
-  for (String appointment in user.treatments.last.scheduledAppointments!) {
+  for (String appointment in user.appointments!.scheduledAppointments!) {
     DateTime appointmentAsDT = DateTime.parse(appointment);
     if (DateUtils.isSameDay(appointmentAsDT, day)) {
       showDialog(
@@ -172,8 +133,7 @@ void scheduleAppointment({required BuildContext context, required DateTime day, 
     }
   }
 
-  //if (appointmentsInWeek < user.appointments!.appointmentsPerWeek!) {
-  if (appointmentsInWeek < user.treatments.last.appointmentsPerWeek!) {
+  if (appointmentsInWeek < user.appointments!.appointmentsPerWeek!) {
     showDialog(
       barrierDismissible: false,
       context: context,
@@ -244,7 +204,7 @@ void scheduleAppointment({required BuildContext context, required DateTime day, 
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: const Text('Límite alcanzado'),
-        content: Text('Ya tienes agendadas $appointmentsInWeek citas en esta semana, el límite por semana es de ${user.treatments.last.appointmentsPerWeek}'),
+        content: Text('Ya tienes agendadas $appointmentsInWeek citas en esta semana, el límite por semana es de ${user.appointments!.appointmentsPerWeek}'),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -258,7 +218,7 @@ void scheduleAppointment({required BuildContext context, required DateTime day, 
       ),
     );
   }
-}
+}*/
 
 void manageScheduledAppointment({required BuildContext context, required DateTime scheduledDate, required User user}){
   showDialog(

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:light_center/Views/agreements.dart';
 import 'package:light_center/Views/dashboard.dart';
 import 'package:light_center/Views/login.dart';
 import 'package:light_center/Views/home.dart';
 import 'package:light_center/Views/news.dart';
 import 'package:light_center/Views/nutritional_orientation.dart';
+import 'package:light_center/Views/pdf.dart';
 import 'package:light_center/Views/splash.dart';
 import 'package:light_center/Views/treatment_selection.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NavigationService {
   static const String splashScreen = "/";
+  static const String agreementsScreen = '/agreements';
   static const String loginScreen = '/login';
   static const String dashboardScreen = '/dashboard';
   static const String homeScreen = '/home';
@@ -25,6 +28,7 @@ class NavigationService {
 
   final Map<String, Widget Function(BuildContext)> routes = {
     splashScreen: (context) => const Splash(),
+    agreementsScreen: (context) => const Agreements(),
     loginScreen: (context) => const Login(),
     dashboardScreen: (context) => const Dashboard(),
     treatmentSelection: (context) => const TreatmentSelection(),
@@ -151,5 +155,13 @@ class NavigationService {
     if (await canLaunchUrl(requestUri)){
       await launchUrl(requestUri);
     }
+  }
+
+  static Future<dynamic> openInternalRegulations() async {
+    return _navigationKey.currentState!.push(MaterialPageRoute(builder: (context) => const PDFScreen(pdfName: 'Reglamento Interno')));
+  }
+
+  static Future<dynamic> openSessionIndications() async {
+    return _navigationKey.currentState!.push(MaterialPageRoute(builder: (context) => const PDFScreen(pdfName: 'Indicaciones para sesiones')));
   }
 }

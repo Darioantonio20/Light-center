@@ -53,7 +53,8 @@ void validateUser ({required User user}) async {
       envelopeName: 'SPA_VALIDAPACIENTE',
       content: {
         'DSNDataBase': user.location.value!.code,
-        'NoWhatsAPP': '521${user.whatsappNumber}'
+        'NoWhatsAPP': '521${user.whatsappNumber}',
+        'CodVerificador': user.code
       });
 
   //print("Respuesta validacion");
@@ -66,12 +67,13 @@ void validateUser ({required User user}) async {
       data = data.replaceAll("ERR: ", "");
     }
 
-    NavigationService.showSimpleErrorAlertDialog(
+    await NavigationService.showSimpleErrorAlertDialog(
         title: 'Error al ingresar',
         content: data);
+    await userCubit.removeUserCode();
+    passwordController.clear();
   } else {
 
-    ///Ask about login code validation
     data = data.substring(data.indexOf("€") + 1);
     List<String> datosPaciente = data.split(",");
     print(datosPaciente);

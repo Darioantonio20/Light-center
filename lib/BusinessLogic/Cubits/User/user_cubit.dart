@@ -127,11 +127,17 @@ class UserCubit extends Cubit<UserState> {
 
   Future<void> updateUserForLogin({required User user, bool isValidation = false}) async {
     try {
+      emit(UserLoading());
       if (isValidation == false) {
-        await _repository.updateUserForLogin(user);
+        if (await _repository.updateUserForLogin(user) == false) {
+          emit(UserError('Error al almacenar la información del usuario'));
+        }
       } else {
-        await _repository.updateUserForValidation(user);
-        await NavigationService.pushReplacementNamed(NavigationService.dashboardScreen);
+        if (await _repository.updateUserForValidation(user) == true) {
+          await NavigationService.pushReplacementNamed(NavigationService.dashboardScreen);
+        } else {
+          emit(UserError('Error al almacenar la información del usuario'));
+        }
       }
       emit(UserUpdated());
     } catch (e) {
@@ -372,6 +378,14 @@ class UserCubit extends Cubit<UserState> {
     emit(UserUpdated());
   }
 
+  void changeName(String name) async {
+    emit(UserLoading());
+    User user = await _repository.getUser() ?? User();
+    user.name = name;
+    await updateUser(user);
+    emit(UserUpdated());
+  }
+
   Future<void> updateScreen({required VoidCallback action, required User user}) async {
     try {
       emit(UserLoading());
@@ -379,6 +393,35 @@ class UserCubit extends Cubit<UserState> {
       emit(UserLoaded(user: user));
     } catch (e) {
       emit(UserError('Ocurrió un error al actualizar la pantalla: $e'));
+    }
+  }
+
+  Future<Map<String, dynamic>> validateCredentials() async {
+    try {
+      emit(UserLoading());
+      User? user = await _repository.getUser();
+
+      if (user == null) {
+        return {
+          'validation': false,
+          'message': 'El usuario no existe.'
+        };
+      } else if (user.whatsappNumber == null || user.code == null || user.location.value == null) {
+        return {
+          'validation': false,
+          'message': 'El usuario no tiene todas sus credenciales.'
+        };
+      }
+
+      Map<String, dynamic> result = await _repository.fetchUser(user: user);
+      emit(UserLoaded(user: user));
+      return result;
+    } catch (e) {
+      emit(UserError('Ocurrió un error al validar la información del usuario: $e'));
+      return {
+        'validation': false,
+        'message': e.toString()
+      };
     }
   }
 }

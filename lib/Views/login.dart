@@ -121,7 +121,9 @@ class Login extends StatelessWidget {
         currentScreen = errorScreen(context: context, errorMessage: state.errorMessage.toString());
       }
 
-      currentScreen ??= invalidStateScreen(context: context);
+      if (currentScreen == null) {
+        currentScreen = invalidStateScreen(context: context);
+      }
 
       return Scaffold(
         appBar: commonAppBar(),
