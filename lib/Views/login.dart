@@ -5,6 +5,7 @@ import 'package:light_center/BusinessLogic/Cubits/Location/location_cubit.dart';
 import 'package:light_center/BusinessLogic/Cubits/Treatment/treatment_cubit.dart';
 import 'package:light_center/BusinessLogic/Cubits/User/user_cubit.dart';
 import 'package:light_center/Data/Models/Location/location_model.dart';
+import 'package:light_center/Services/navigation_service.dart';
 import 'custom_widgets.dart';
 import 'package:light_center/BusinessLogic/Controllers/login_controller.dart';
 
@@ -39,7 +40,16 @@ class Login extends StatelessWidget {
         fillForm(state.user);
 
         if (state.user.whatsappNumber != null && state.user.code != null && state.user.location.value != null) {
-          validateUser(user: state.user);
+          userCubit.validateCredentials().then((value) async {
+            print(value);
+            if (value['validation'] == true) {
+              await NavigationService.pushReplacementNamed(NavigationService.dashboardScreen);
+            } else {
+              await userCubit.removeUserCode();
+              await NavigationService.showSimpleErrorAlertDialog(title: 'Error al iniciar sesión', content: value['message']);
+            }
+          });
+          //validateUser(user: state.user);
         }
 
         currentScreen = Form(
@@ -121,9 +131,7 @@ class Login extends StatelessWidget {
         currentScreen = errorScreen(context: context, errorMessage: state.errorMessage.toString());
       }
 
-      if (currentScreen == null) {
-        currentScreen = invalidStateScreen(context: context);
-      }
+      currentScreen ??= invalidStateScreen(context: context);
 
       return Scaffold(
         appBar: commonAppBar(),

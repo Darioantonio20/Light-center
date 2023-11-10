@@ -118,17 +118,10 @@ class NavigationService {
     );
   }
 
-  /*static void callToPhone(String phoneNumber) async {
-    if (await canLaunchUrl('')){
-      await launchUrl(url)
-    }
-  }*/
-  String _rocencranEmail = 'ventas@predictionsoft.com.mx';
-
-  static void makeCall() async {
+  static void makeCall({String phoneNumber = '5219995514492'}) async {
     Uri requestUri = Uri(
       scheme: 'tel',
-      path: '5219995514492'
+      path: phoneNumber
     );
 
     if (await canLaunchUrl(requestUri)){
@@ -146,10 +139,10 @@ class NavigationService {
     }
   }
 
-  static void sendEmail() async {
+  static void sendEmail({String email = 'lightcenter.merida.oficial@gmail.com'}) async {
     Uri requestUri = Uri(
       scheme: 'mailto',
-      path: 'lightcenter.merida.oficial@gmail.com'
+      path: email
     );
 
     if (await canLaunchUrl(requestUri)){
@@ -163,5 +156,21 @@ class NavigationService {
 
   static Future<dynamic> openSessionIndications() async {
     return _navigationKey.currentState!.push(MaterialPageRoute(builder: (context) => const PDFScreen(pdfName: 'Indicaciones para sesiones')));
+  }
+
+  static void openURL({bool secureConnection = true, required String baseUrl, required String endPoint}) async {
+    late Uri requestUri;
+    if (secureConnection == true) {
+      requestUri = Uri.https(baseUrl, endPoint);
+    } else {
+      requestUri = Uri.http(baseUrl, endPoint);
+    }
+
+    if (await canLaunchUrl(requestUri)){
+      await launchUrl(
+          requestUri,
+          mode: LaunchMode.inAppWebView
+      );
+    }
   }
 }

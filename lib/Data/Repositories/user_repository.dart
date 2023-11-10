@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:light_center/BusinessLogic/Cubits/Treatment/treatment_cubit.dart';
 import 'package:light_center/Data/Models/Treatment/treatment_model.dart';
@@ -189,7 +190,7 @@ class UserRepository {
         content: {
           'DSNDataBase': user.location.value!.code,
           'NoWhatsAPP': '521${user.whatsappNumber}',
-          'CodVerificador': user.code
+          'CodVerificador': user.code,
         });
 
     if (data.contains('ERR:') || data.length == 1) {

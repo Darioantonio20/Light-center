@@ -38,7 +38,109 @@ AppBar commonAppBar({
       ),
     ),
     backgroundColor: Colors.deepPurpleAccent,
-    centerTitle: true
+    centerTitle: true,
+    actions: [
+      IconButton(
+          onPressed: () => showAboutDialog(
+              context: NavigationService.context(),
+              applicationName: 'Light Center',
+              applicationVersion: 'Versión 1.0',
+              applicationLegalese: 'Kranzwide Consultive S.A. de C.V.',
+              applicationIcon: Image.asset('assets/images/icon-512.png',
+                  width: 50,
+                  height: 50
+              ),
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(
+                    top: 20,
+                    bottom: 20
+                ),
+                child: Row(
+                  children: [
+                    const Text('Desarrollador: ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14
+                        )
+                    ),
+                    GestureDetector(
+                      onTap: () => NavigationService.openURL(baseUrl: 'github.com', endPoint: '/ChuyEx'),
+                      child: Text('ChuyEx',
+                          style: TextStyle(
+                              color: LightCenterColors.mainPurple,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14
+                          )
+                      ),
+                    )
+                  ],
+                ),
+              ),
+
+              const Center(child: Text('Contacta a la consultora',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18
+                ))
+              ),
+
+              Padding(
+                padding: const EdgeInsets.only(
+                    top: 10,
+                    bottom: 10
+                ),
+                child: Row(
+                  children: [
+                    const Text('Pagina Web: '),
+                    GestureDetector(
+                      onTap: () => NavigationService.openURL(baseUrl: 'predictionsoft.com.mx', endPoint: ''),
+                      child: Text('predictionsoft.com.mx', style: TextStyle(color: LightCenterColors.mainPurple)),
+                    )
+                  ],
+                ),
+              ),
+
+              Row(
+                children: [
+                  const Text('Email: '),
+                  GestureDetector(
+                    onTap: () => NavigationService.sendEmail(email: 'ventas@predictionsoft.com.mx'),
+                    child: Text('ventas@predictionsoft.com.mx', style: TextStyle(color: LightCenterColors.mainPurple)),
+                  )
+                ],
+              ),
+
+              Padding(
+                padding: const EdgeInsets.only(
+                    top: 10,
+                    bottom: 10
+                ),
+                child: Row(
+                  children: [
+                    const Text('Facebook: '),
+                    GestureDetector(
+                      onTap: () => NavigationService.openURL(baseUrl: 'facebook.com', endPoint: '/PredictionSOFTwareNube'),
+                      child: Text('PredictionSOFTwareNube', style: TextStyle(color: LightCenterColors.mainPurple)),
+                    )
+                  ],
+                ),
+              ),
+
+              Row(
+                children: [
+                  const Text('Teléfono: '),
+                  GestureDetector(
+                    onTap: () => NavigationService.makeCall(phoneNumber: '5219613662079'),
+                    child: Text('9613662079', style: TextStyle(color: LightCenterColors.mainPurple)),
+                  )
+                ],
+              ),
+            ]
+          ),
+          icon: const Icon(Icons.info))
+    ],
   );
 }
 
@@ -298,7 +400,6 @@ GridView getScheduleGrid({required List<dynamic> schedule, required DateTime sel
           width: MediaQuery.of(context).size.width * 0.01,
           child: FilledButton(
               onPressed: () {
-                print("Presionando un botón");
                 if(schedule.runtimeType == List<Event>) {
                   manageScheduledAppointment(context: context, scheduledDate: currentDateTime, user: user);
                 } else {
@@ -337,6 +438,7 @@ Drawer commonDrawer() {
         ),
 
         tappableListTileItem(
+            isDisabled: true,
             icon: Icons.person,
             title: 'Mi Perfil',
             action: () {
@@ -350,15 +452,13 @@ Drawer commonDrawer() {
         tappableListTileItem(
             icon: Icons.book,
             title: 'Mis Citas',
-            action: () {
-              NavigationService.pop();
-              NavigationService.showSnackBar(message: 'No implementado');
-            }
+            action: () => NavigationService.popAndPushNamed(NavigationService.homeScreen)
         ),
 
         const Divider(),
 
         tappableListTileItem(
+            isDisabled: true,
             icon: Icons.attach_money,
             title: 'Mis Pagos',
             action: () {
@@ -372,7 +472,7 @@ Drawer commonDrawer() {
         tappableListTileItem(
             icon: Icons.local_offer,
             title: 'Promociones',
-            action: () => NavigationService.pushNamed(NavigationService.news)
+            action: () => NavigationService.popAndPushNamed(NavigationService.news)
         ),
 
         const Divider(),
@@ -380,7 +480,7 @@ Drawer commonDrawer() {
         tappableListTileItem(
             icon: Icons.restaurant,
             title: 'Orientación Nutrimental',
-            action: () => NavigationService.pushNamed(NavigationService.nutritionalOrientation)
+            action: () => NavigationService.popAndPushNamed(NavigationService.nutritionalOrientation)
         ),
 
         const Padding(
@@ -433,12 +533,12 @@ Drawer commonDrawer() {
   );
 }
 
-GestureDetector tappableListTileItem({required IconData icon, required String title, required VoidCallback action}) {
+GestureDetector tappableListTileItem({required IconData icon, required String title, required VoidCallback action, bool isDisabled = false}) {
   return GestureDetector(
-    onTap: action,
+    onTap: isDisabled ? null : action,
     child: ListTile(
-      leading: Icon(icon),
-      title: Text(title),
+      leading: Icon(icon, color: isDisabled ? Colors.grey : null),
+      title: Text(title, style: TextStyle(color: isDisabled ? Colors.grey : null)),
     ),
   );
 }

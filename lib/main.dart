@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:isar/isar.dart';
+import 'package:jiffy/jiffy.dart';
 import 'package:light_center/BusinessLogic/Cubits/Home/home_cubit.dart';
 import 'package:light_center/BusinessLogic/Cubits/Location/location_cubit.dart';
 import 'package:light_center/BusinessLogic/Cubits/User/user_cubit.dart';
@@ -18,6 +19,7 @@ import 'Views/dashboard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Jiffy.setLocale('es_us');
 
   final IsarService isar = IsarService();
   isar.open();

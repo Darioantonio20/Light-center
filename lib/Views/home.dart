@@ -30,7 +30,7 @@ class HomePage extends StatelessWidget {
           state.user.treatments.load();
           List<Widget> widgetOptions = <Widget>[
             Schedule(user: state.user),
-            const MyAppointments(),
+            MyAppointments(user: state.user),
           ];
 
           return BlocBuilder<HomeCubit, HomeState>(

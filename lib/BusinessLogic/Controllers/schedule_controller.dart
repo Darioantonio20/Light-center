@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:light_center/BusinessLogic/Cubits/User/user_cubit.dart';
+import 'package:light_center/Data/Models/Treatment/treatment_model.dart';
 import 'package:light_center/Data/Models/event_model.dart';
 import 'package:light_center/Data/Models/User/user_model.dart';
 import 'package:light_center/Services/navigation_service.dart';
@@ -54,7 +55,8 @@ Future<List<DateTime>> getAvailableDays({required User user}) async {
 
   for (String date in data.split(",")) {
     try {
-      dates.add(Jiffy.parse(date.trim(), pattern: 'MM/dd/yyyy').dateTime);
+      //dates.add(Jiffy.parse(date.trim(), pattern: 'MM/dd/yyyy').dateTime);
+      dates.add(Jiffy.parse(date.trim(), pattern: 'dd/MM/yyyy').dateTime);
     } catch(e) {
       print('Error \n: $e');
     }
@@ -144,8 +146,10 @@ void scheduleAppointment({required BuildContext context, required DateTime day, 
   int appointmentsInWeek = 0;
 
   //for (String appointment in user.appointments!.scheduledAppointments!) {
-  for (String appointment in user.treatments.last.scheduledAppointments!) {
-    DateTime appointmentAsDT = DateTime.parse(appointment);
+  //for (String appointment in user.treatments.last.scheduledAppointments!) {
+  for (Appointment appointment in user.treatments.last.scheduledAppointments!) {
+    //DateTime appointmentAsDT = DateTime.parse(appointment);
+    DateTime appointmentAsDT = DateTime.parse("${appointment.date!} ${appointment.time!}");
     if (DateUtils.isSameDay(appointmentAsDT, day)) {
       showDialog(
         context: context,

@@ -111,7 +111,7 @@ class Dashboard extends StatelessWidget {
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               )
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -125,46 +125,20 @@ class Dashboard extends StatelessWidget {
                       crossAxisCount: 2,
                       childAspectRatio: 4/3,
                       mainAxisSpacing: 20,
-                      crossAxisSpacing: 20
+                      crossAxisSpacing: 20,
                   ),
                   children: [
-                    /*GestureDetector(
-                      onTap: () => NavigationService.pushNamed(NavigationService.homeScreen),
-                      child: Card(
-                        color: LightCenterColors.mainPurple,
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.4,
-                          height: MediaQuery.of(context).size.height * 0.15,
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.book,
-                                size: 50,
-                                color: Colors.white,
-                              ),
-                              Flexible(
-                                child: Text('Mis\nCitas',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontSize: 24,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),*/
                     GestureDetector(
                       onTap: () => NavigationService.pushNamed(NavigationService.homeScreen),
                       child: Card(
-                        color: LightCenterColors.mainPurple,
-                        child: SizedBox(
+                        color: const Color.fromRGBO(119, 61, 190, 1),
+                        child: Container(
                           width: MediaQuery.of(context).size.width * 0.4,
                           height: MediaQuery.of(context).size.height * 0.15,
-                          child: Image.asset("assets/images/mis_citas.png", fit: BoxFit.cover),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(35.0),
+                            image: const DecorationImage(image: AssetImage("assets/images/mis_citas.png"), fit: BoxFit.fill)
+                          ),
                         ),
                       ),
                     ),
@@ -172,51 +146,29 @@ class Dashboard extends StatelessWidget {
                     GestureDetector(
                       onTap: () => NavigationService.showSnackBar(message: 'No implementado'),
                       child: Card(
-                        color: LightCenterColors.mainBrown,
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.attach_money,
-                              size: 50,
-                              color: Colors.white,
-                            ),
-                            Flexible(
-                              child: Text('Mis\nPagos',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontSize: 24,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold
-                                ),
-                              ),
-                            )
-                          ],
+                        color: const Color.fromRGBO(32, 203, 212, 1),
+                        child: Container(
+                          width: MediaQuery.of(context).size.width * 0.4,
+                          height: MediaQuery.of(context).size.height * 0.15,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(35.0),
+                              image: const DecorationImage(image: AssetImage("assets/images/mis_pagos.png"), fit: BoxFit.fill)
+                          ),
                         ),
                       ),
                     ),
 
                     GestureDetector(
                       onTap: () => NavigationService.pushNamed(NavigationService.news),
-                      child: const Card(
-                        color: Colors.deepOrange,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.local_offer,
-                              size: 40,
-                              color: Colors.white,
-                            ),
-                            Flexible(
-                              child: Text('Promos',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold
-                                ),
-                              ),
-                            )
-                          ],
+                      child: Card(
+                        color: const Color.fromRGBO(224, 23, 131, 1),
+                        child: Container(
+                          width: MediaQuery.of(context).size.width * 0.4,
+                          height: MediaQuery.of(context).size.height * 0.15,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(35.0),
+                              image: const DecorationImage(image: AssetImage("assets/images/promociones.png"), fit: BoxFit.fill)
+                          ),
                         ),
                       ),
                     ),

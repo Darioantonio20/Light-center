@@ -57,17 +57,12 @@ Future<Map<String, dynamic>> sendHTTPRequest({required String baseUrl, required 
   }
 
   String auxResponse = response.body.trim();
-  /*print('El cuelpo');
-  print(auxResponse);
-  print(auxResponse[0]);
-  print(auxResponse[auxResponse.length - 1]);*/
 
   if (auxResponse[0] == '[' && auxResponse[auxResponse.length - 1] == ']') {
     return {
       'list': convert.jsonDecode(auxResponse)
     };
   }
-  //print(await convert.jsonDecode(auxResponse));
 
   return await convert.jsonDecode(auxResponse) as Map<String, dynamic>;
 }
@@ -176,7 +171,6 @@ Future<String> sendSOAPRequest({required String soapAction, required String enve
         });
       });
   final document = builder.buildDocument();
-  //print(document.toString());
 
   final response = await http.post(
       requestUri,
@@ -184,8 +178,6 @@ Future<String> sendSOAPRequest({required String soapAction, required String enve
       body: convert.utf8.encode(document.toString()),
       encoding: convert.utf8
   ).timeout(timeOutDuration);
-
-  //print(response.body);
 
   final responseDocument = xml.XmlDocument.parse(response.body);
 
@@ -195,9 +187,6 @@ Future<String> sendSOAPRequest({required String soapAction, required String enve
       .map((text) => text.value.trim())
       .where((string) => string.isNotEmpty)
       .join('\n');
-
-  //print('result');
-  //print(textual);
 
   return textual;
 }

@@ -19,3 +19,12 @@ extension StringCase on String {
     }
   }
 }
+
+extension TrimData on String {
+  String trimEqualsData() {
+    if (isEmpty) {
+      return '';
+    }
+    return substring(indexOf("=") + 1);
+  }
+}

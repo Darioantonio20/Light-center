@@ -33,8 +33,4 @@ class LocationCubit extends Cubit<LocationState> {
       emit(LocationError('Ocurrió un error al obtener las clínicas del SPA: $e'));
     }
   }
-
-  Future<Location?> getFirstLocation() async {
-    await _repository.getLocationById(1);
-  }
 }

@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:light_center/BusinessLogic/Cubits/Location/location_cubit.dart';
@@ -47,7 +45,7 @@ void login({required User user}) async {
   }
 }
 
-void validateUser ({required User user}) async {
+/*void validateUser ({required User user}) async {
   String data = await sendSOAPRequest(
       soapAction: 'http://tempuri.org/SPA_VALIDAPACIENTE',
       envelopeName: 'SPA_VALIDAPACIENTE',
@@ -130,4 +128,4 @@ DateTime? parseDateTimeFromResponse(String dateString) {
   } catch (e) {
     return null;
   }
-}
+}*/
