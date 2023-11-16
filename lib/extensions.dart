@@ -1,3 +1,5 @@
+import 'package:jiffy/jiffy.dart';
+
 extension StringCase on String {
   String toPascalCase() {
     if (isEmpty) {

@@ -18,6 +18,7 @@ late final ValueNotifier<List<Event>> selectedEvents;
 late ValueNotifier<DateTime?> selectedDay;
 late ValueNotifier<DateTime> focusedDay;
 List<DateTime> availableDates = [];
+late ValueNotifier<List<DateTime>> available2Dates;
 
 /*DateTime getFirstDateToSchedule({required Appointments? appointments}) {
   if (appointments != null) {
@@ -42,23 +43,24 @@ Future<List<DateTime>> getAvailableDays({required User user}) async {
         'EXTERNAL_Idref_pedidospresup': user.treatments.last.orderId
       }
   );
+  print('Fechas');
+  print(data);
   focusedDay = ValueNotifier<DateTime>(DateTime.now());
   selectedDay = ValueNotifier<DateTime>(DateTime.now());
   if (data.contains("ERR:")) {
     return [];
   }
 
-  //print(data);
-  data = data.substring(0, data.lastIndexOf(","));
+  List<String> datesAux = data.split('€');
+  String datesString = datesAux[0].substring(0, data.lastIndexOf(","));
 
   List<DateTime> dates = [];
 
-  for (String date in data.split(",")) {
+  for (String date in datesString.split(",")) {
     try {
-      //dates.add(Jiffy.parse(date.trim(), pattern: 'MM/dd/yyyy').dateTime);
       dates.add(Jiffy.parse(date.trim(), pattern: 'dd/MM/yyyy').dateTime);
     } catch(e) {
-      print('Error \n: $e');
+      return [];
     }
   }
 
@@ -110,7 +112,6 @@ Future<List<String>> getDaySchedule({required DateTime day, required User user})
           'EXTERNAL_FechaCandidata': DateFormat("dd/MM/yyyy").format(day).toString()
         }
     );
-    print(data);
 
     if (data.contains('ERR:')) {
       return [
@@ -121,7 +122,6 @@ Future<List<String>> getDaySchedule({required DateTime day, required User user})
     } else {
       data = data.substring(0, data.lastIndexOf(","));
       List<String> hours = [];
-      //return List<String>.from(data);
       for (String hour in data.split(",")) {
         hour = hour.trim();
         if (hour.length == 1) {
@@ -142,14 +142,12 @@ Future<List<String>> getDaySchedule({required DateTime day, required User user})
   }
 }
 
-void scheduleAppointment({required BuildContext context, required DateTime day, required User user}) {
+Future<void> scheduleAppointment({required BuildContext context, required DateTime day, required User user}) async {
   int appointmentsInWeek = 0;
 
-  //for (String appointment in user.appointments!.scheduledAppointments!) {
-  //for (String appointment in user.treatments.last.scheduledAppointments!) {
   for (Appointment appointment in user.treatments.last.scheduledAppointments!) {
-    //DateTime appointmentAsDT = DateTime.parse(appointment);
-    DateTime appointmentAsDT = DateTime.parse("${appointment.date!} ${appointment.time!}");
+    DateTime appointmentAsDT = appointment.dateTime!;
+
     if (DateUtils.isSameDay(appointmentAsDT, day)) {
       showDialog(
         context: context,
@@ -176,9 +174,8 @@ void scheduleAppointment({required BuildContext context, required DateTime day, 
     }
   }
 
-  //if (appointmentsInWeek < user.appointments!.appointmentsPerWeek!) {
-  if (appointmentsInWeek < user.treatments.last.appointmentsPerWeek!) {
-    showDialog(
+  if (appointmentsInWeek < (user.treatments.last.appointmentsPerWeek ?? 1)) {
+    await showDialog(
       barrierDismissible: false,
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -186,7 +183,8 @@ void scheduleAppointment({required BuildContext context, required DateTime day, 
         content: Text('¿Deseas la cita para el ${DateFormat.yMMMMd('es-MX').format(day)} a la(s) ${DateFormat.jm().format(day)}?'),
         actions: <Widget>[
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            //onPressed: () => Navigator.pop(context),
+            onPressed: () => NavigationService.pop(),
             child: const Text('No',
               style: TextStyle(
                   color: Colors.red
@@ -196,7 +194,7 @@ void scheduleAppointment({required BuildContext context, required DateTime day, 
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              bool scheduleResult = await userCubit.scheduleAppointment(whatsappNumber: user.whatsappNumber!, day: day);
+              bool scheduleResult = await userCubit.scheduleAppointment(day: day);
               await showDialog(
                 context: NavigationService.context(),
                 builder: (BuildContext context) => AlertDialog(
@@ -220,7 +218,8 @@ void scheduleAppointment({required BuildContext context, required DateTime day, 
                   ),
                   actions: <Widget>[
                     TextButton(
-                      onPressed: () => Navigator.pop(context),
+                      //onPressed: () => Navigator.pop(context),
+                      onPressed: () => NavigationService.pop(),
                       child: Text('Cerrar',
                         style: TextStyle(
                             color: LightCenterColors.mainPurple
@@ -282,7 +281,7 @@ void manageScheduledAppointment({required BuildContext context, required DateTim
         TextButton(
           onPressed: () {
             Navigator.pop(context);
-            cancelAppointment(context: context, day: scheduledDate, user: user);
+            //cancelAppointment(context: context, day: scheduledDate, user: user);
           },
           child: const Text('Cancelar',
             style: TextStyle(
@@ -295,7 +294,7 @@ void manageScheduledAppointment({required BuildContext context, required DateTim
   );
 }
 
-void cancelAppointment({required BuildContext context, required DateTime day, required User user}) {
+/*void cancelAppointment({required BuildContext context, required DateTime day, required User user}) {
   showDialog(
     context: context,
     builder: (BuildContext context) => AlertDialog(
@@ -313,7 +312,7 @@ void cancelAppointment({required BuildContext context, required DateTime day, re
         TextButton(
           onPressed: () async {
             NavigationService.pop();
-            bool cancelResult = await userCubit.cancelAppointment(whatsappNumber: user.whatsappNumber!, day: day);
+            bool cancelResult = await userCubit.cancelAppointment(appointment: appointment);
             await NavigationService.showAlertDialog(
                 title: Text(cancelResult == true ? 'Éxito al cancelar' : 'Error al cancelar',
                     style: TextStyle(
@@ -356,4 +355,4 @@ void cancelAppointment({required BuildContext context, required DateTime day, re
       ],
     ),
   );
-}
+}*/

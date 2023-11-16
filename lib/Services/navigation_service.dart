@@ -104,10 +104,11 @@ class NavigationService {
       builder: (BuildContext context) => AlertDialog(
         title: Text(title),
         content: Text(content),
-        actions: const [
+        actions: [
           TextButton(
-              onPressed: pop,
-              child: Text('Cerrar',
+              onPressed: () => pop(),
+              //onPressed: () => removeAllRoutes(),
+              child: const Text('Cerrar',
                 style: TextStyle(
                   color: Colors.red
                 ),

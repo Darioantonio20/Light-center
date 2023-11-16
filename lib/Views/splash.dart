@@ -32,14 +32,15 @@ class Splash extends StatelessWidget {
                 builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
                   if (snapshot.hasData) {
                     Future.delayed(const Duration(seconds: 8), (){
-                      _controller.dispose().whenComplete(() {
+                      _controller.dispose().whenComplete(() async {
                         if (snapshot.data!['validation'] == true)  {
-                          NavigationService.pushReplacementNamed(NavigationService.dashboardScreen);
+                          await _userCubit.getAppointmentsBySOAP();
+                          await NavigationService.pushReplacementNamed(NavigationService.dashboardScreen);
                         } else {
                           if (snapshot.data!['message'] == 'El usuario no existe.') {
-                            NavigationService.pushReplacementNamed(NavigationService.agreementsScreen);
+                            await NavigationService.pushReplacementNamed(NavigationService.agreementsScreen);
                           } else {
-                            NavigationService.pushReplacementNamed(NavigationService.loginScreen);
+                            await NavigationService.pushReplacementNamed(NavigationService.loginScreen);
                           }
                         }
                       });

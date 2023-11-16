@@ -399,11 +399,11 @@ GridView getScheduleGrid({required List<dynamic> schedule, required DateTime sel
         return SizedBox(
           width: MediaQuery.of(context).size.width * 0.01,
           child: FilledButton(
-              onPressed: () {
+              onPressed: () async {
                 if(schedule.runtimeType == List<Event>) {
                   manageScheduledAppointment(context: context, scheduledDate: currentDateTime, user: user);
                 } else {
-                  scheduleAppointment(context: context, day: currentDateTime, user: user);
+                  await scheduleAppointment(context: context, day: currentDateTime, user: user);
                 }
               },
               child: Text(
@@ -419,6 +419,7 @@ GridView getScheduleGrid({required List<dynamic> schedule, required DateTime sel
 Drawer commonDrawer() {
   return Drawer(
     child: ListView(
+      shrinkWrap: true,
       physics: const ClampingScrollPhysics(),
       children: [
 
@@ -489,6 +490,33 @@ Drawer commonDrawer() {
               bottom: 20
           ),
           child: Center(
+              child: Text('Acuerdos',
+                style:TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold
+                ),
+              )
+          ),
+        ),
+
+        tappableListTileItem(
+            icon: Icons.rule,
+            title: 'Reglamento',
+            action: () => NavigationService.openInternalRegulations()
+        ),
+        
+        tappableListTileItem(
+            icon: Icons.help_center,
+            title: 'Indicaciones',
+            action: () => NavigationService.openSessionIndications()
+        ),
+
+        const Padding(
+          padding: EdgeInsets.only(
+              top: 50,
+              bottom: 20
+          ),
+          child: Center(
               child: Text('Contáctanos',
                 style:TextStyle(
                     fontSize: 18,
@@ -503,7 +531,8 @@ Drawer commonDrawer() {
           shrinkWrap: true,
           padding: const EdgeInsets.only(
             left: 20,
-            right: 20
+            right: 20,
+            bottom: 30
           ),
           children: [
             FilledButton.icon(

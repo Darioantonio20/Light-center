@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:light_center/BusinessLogic/Cubits/User/user_cubit.dart';
 import 'package:light_center/Services/navigation_service.dart';
-import 'package:light_center/Services/network_service.dart';
 import 'package:light_center/Views/custom_widgets.dart';
 import 'package:light_center/colors.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
@@ -81,6 +80,21 @@ class Dashboard extends StatelessWidget {
             physics: const ClampingScrollPhysics(),
             child: Column(
               children: [
+                Visibility(
+                  visible: state.user.treatments.last.scheduledAppointments!.isNotEmpty,
+                    child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.tealAccent,
+                        ),
+                        child: Text('Su próxima cita es el día ${state.user.treatments.last.scheduledAppointments!.isNotEmpty ? state.user.treatments.last.scheduledAppointments!.first.jiffyDate : ''}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16
+                          ),
+                        ))
+                ),
+
                 Padding(
                   padding: EdgeInsets.only(
                       top: MediaQuery.of(context).size.height * 0.01,

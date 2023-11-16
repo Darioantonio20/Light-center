@@ -1,168 +1,113 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:light_center/BusinessLogic/Controllers/my_appointments_controller.dart';
 import 'package:light_center/BusinessLogic/Cubits/User/user_cubit.dart';
 import 'package:light_center/BusinessLogic/Cubits/Treatment/treatment_cubit.dart';
-import 'package:light_center/Data/Models/User/user_model.dart';
-import 'package:light_center/Services/navigation_service.dart';
 import 'package:light_center/Views/custom_widgets.dart';
 import 'package:light_center/colors.dart';
 
 class MyAppointments extends StatelessWidget {
-  final User user;
-  const MyAppointments({super.key, required this.user});
+  const MyAppointments({super.key});
 
   @override
-  /*Widget build(BuildContext context) {
-    userCubit = BlocProvider.of<TreatmentCubit>(context);
-    userCubit.getUser();
-
-    Widget? currentUserScreen;
-
-    return BlocBuilder<UserCubit, UserState>(
-      bloc: userCubit,
-      builder: (context, state) {
-        if (state is UserUpdated || state is UserSaved) {
-          userCubit.getUser();
-          currentUserScreen = updatingScreen(
-              context: context, message: 'Obteniendo datos de usuario...');
-        }
-
-        if (state is UserLoading) {
-          currentUserScreen = loadingScreen(context: context,
-              message: 'Generando presentación de usuario...');
-        }
-
-        if (state is UserLoaded) {
-
-          return Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: Column(
-                      children: [
-                        const CircleAvatar(
-                          child: Icon(Icons.person),
-                        ),
-
-                        Text(state.user.name!),
-                        Text(state.user.whatsappNumber!)
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              Visibility(
-                  visible: state.user.appointments?.scheduledAppointments != null ,
-                  child: ExpansionTile(
-                    collapsedBackgroundColor: LightCenterColors.backgroundPurple,
-                    backgroundColor: Colors.deepPurpleAccent,
-                    initiallyExpanded: true,
-                    title: const Text('Citas agendadas'),
-                    children: scheduledAppointmentsList(state.user.appointments!.scheduledAppointments!),
-                  )
-              ),
-
-              ListTile(
-                title: const Text('Citas por agendar'),
-                subtitle: Text(pendingAppointments(appointments: state.user.appointments),
-                  style: TextStyle(
-                      color: LightCenterColors.mainBrown,
-                      fontWeight: FontWeight.bold
-                  ),
-                ),
-              ),
-
-              ListTile(
-                title: const Text('Fecha límite para agendar'),
-                subtitle: Text(lastDateToSchedule(appointments: state.user.appointments),
-                    style: TextStyle(
-                        color: LightCenterColors.mainBrown,
-                        fontWeight: FontWeight.bold
-                    )
-                ),
-              )
-            ],
-          );
-        }
-
-        if (state is UserError) {
-          currentUserScreen = errorScreen(
-              context: context, errorMessage: state.errorMessage.toString());
-        }
-
-        currentUserScreen ??= invalidStateScreen(context: context);
-
-        return currentUserScreen!;
-      }
-      );
-  }*/
-
   Widget build(BuildContext context) {
     userCubit = BlocProvider.of<UserCubit>(context);
     treatmentCubit = BlocProvider.of<TreatmentCubit>(context);
+    userCubit.getAppointmentsBySOAP();
+    Widget? currentScreen;
 
-    BlocBuilder<TreatmentCubit, TreatmentState>(
-      builder: (context, state) {
-        return Center();
-      },
-    );
+    return BlocBuilder<UserCubit, UserState>(builder: (context, state) {
+      if (state is UserUpdated || state is UserSaved) {
+        userCubit.getAppointmentsBySOAP();
+        currentScreen = updatingScreen(context: context);
+      }
 
-    return FutureBuilder(
-      future: fetchAppointments(user: user),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          return ListView.separated(
-              physics: const ClampingScrollPhysics(),
-              itemCount: user.treatments.last.scheduledAppointments?.length ?? 0,
-              itemBuilder: (BuildContext context, int index) {
-                if (index == 0) {
-                  return Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          top: 20,
-                          bottom: 20
-                        ),
-                        child: Text('Citas agendadas',
-                        style: TextStyle(
-                          color: LightCenterColors.mainBrown,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20
-                        )
-                        ),
-                      ),
-                      ListTile(
-                          title: Text(user.treatments.last.scheduledAppointments![index].jiffyDateTime),
-                          trailing: FilledButton(
-                            /*onPressed: () => cancelAppointment(
-                          context: context,
-                          day: user.treatments.last.scheduledAppointments![index].dateTime,
-                          user: user),*/
-                              onPressed: () => NavigationService.showSimpleErrorAlertDialog(title: 'No implementado', content: 'Aún estoy trabajando en esto...'),
-                              child: const Text('Cancelar'))
-                      )
-                    ],
-                  );
-                }
-                return ListTile(
-                  title: Text(user.treatments.last.scheduledAppointments![index].jiffyDateTime),
-                  trailing: FilledButton(
-                      /*onPressed: () => cancelAppointment(
-                          context: context, 
-                          day: user.treatments.last.scheduledAppointments![index].dateTime, 
-                          user: user),*/
-                    onPressed: () => NavigationService.showSimpleErrorAlertDialog(title: 'No implementado', content: 'Aún estoy trabajando en esto...'),
-                      child: const Text('Cancelar'))
-                );
-              }, separatorBuilder: (BuildContext context, int index) { return const Padding(padding: EdgeInsets.only(top: 30)); },
+      if (state is UserLoading) {
+        currentScreen = loadingScreen(context: context);
+      }
+
+      if (state is UserLoaded) {
+        if (state.user.treatments.last.scheduledAppointments!.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 20),
+                  child: Icon(FontAwesomeIcons.calendarXmark,
+                      size: 200, color: Colors.red),
+                ),
+                Text('No tienes citas reservadas',
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: LightCenterColors.mainBrown))
+              ],
+            ),
           );
         }
-    );
+
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const ClampingScrollPhysics(),
+          itemCount:
+              state.user.treatments.last.scheduledAppointments?.length ?? 0,
+          itemBuilder: (BuildContext context, int index) {
+            if (index == 0) {
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20, bottom: 20),
+                    child: Text('Citas agendadas',
+                        style: TextStyle(
+                            color: LightCenterColors.mainBrown,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20)),
+                  ),
+                  ListTile(
+                      title: Text(state.user.treatments.last
+                              .scheduledAppointments![index].jiffyDateTime ??
+                          'Error al transformar la fecha'),
+                      trailing: FilledButton(
+                          style: FilledButton.styleFrom(
+                              backgroundColor: Colors.red),
+                          onPressed: () => cancelAppointment(
+                              context: context,
+                              appointment: state.user.treatments.last
+                                  .scheduledAppointments![index]),
+                          child: const Text('Cancelar')))
+                ],
+              );
+            }
+
+            return ListTile(
+                title: Text(state.user.treatments.last
+                    .scheduledAppointments![index].jiffyDateTime!),
+                trailing: FilledButton(
+                    style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                    onPressed: () => cancelAppointment(
+                        context: context,
+                        appointment: state.user.treatments.last
+                            .scheduledAppointments![index]),
+                    child: const Text('Cancelar')));
+          },
+          separatorBuilder: (BuildContext context, int index) {
+            return const Divider();
+          },
+        );
+      }
+
+      if (state is UserError) {
+        currentScreen = errorScreen(
+            context: context, errorMessage: state.errorMessage.toString());
+      }
+
+      currentScreen ??= invalidStateScreen(context: context);
+
+      return currentScreen!;
+    });
   }
 }

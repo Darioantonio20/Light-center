@@ -27,33 +27,38 @@ const TreatmentSchema = CollectionSchema(
       name: r'availableAppointments',
       type: IsarType.long,
     ),
-    r'firstDateToSchedule': PropertySchema(
+    r'availableDates': PropertySchema(
       id: 2,
+      name: r'availableDates',
+      type: IsarType.dateTimeList,
+    ),
+    r'firstDateToSchedule': PropertySchema(
+      id: 3,
       name: r'firstDateToSchedule',
       type: IsarType.dateTime,
     ),
     r'lastDateToSchedule': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'lastDateToSchedule',
       type: IsarType.dateTime,
     ),
     r'name': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'name',
       type: IsarType.string,
     ),
     r'orderId': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'orderId',
       type: IsarType.long,
     ),
     r'productId': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'productId',
       type: IsarType.long,
     ),
     r'scheduledAppointments': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'scheduledAppointments',
       type: IsarType.objectList,
       target: r'Appointment',
@@ -88,6 +93,12 @@ int _treatmentEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
+    final value = object.availableDates;
+    if (value != null) {
+      bytesCount += 3 + value.length * 8;
+    }
+  }
+  {
     final value = object.name;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -118,13 +129,14 @@ void _treatmentSerialize(
 ) {
   writer.writeLong(offsets[0], object.appointmentsPerWeek);
   writer.writeLong(offsets[1], object.availableAppointments);
-  writer.writeDateTime(offsets[2], object.firstDateToSchedule);
-  writer.writeDateTime(offsets[3], object.lastDateToSchedule);
-  writer.writeString(offsets[4], object.name);
-  writer.writeLong(offsets[5], object.orderId);
-  writer.writeLong(offsets[6], object.productId);
+  writer.writeDateTimeList(offsets[2], object.availableDates);
+  writer.writeDateTime(offsets[3], object.firstDateToSchedule);
+  writer.writeDateTime(offsets[4], object.lastDateToSchedule);
+  writer.writeString(offsets[5], object.name);
+  writer.writeLong(offsets[6], object.orderId);
+  writer.writeLong(offsets[7], object.productId);
   writer.writeObjectList<Appointment>(
-    offsets[7],
+    offsets[8],
     allOffsets,
     AppointmentSchema.serialize,
     object.scheduledAppointments,
@@ -140,14 +152,15 @@ Treatment _treatmentDeserialize(
   final object = Treatment();
   object.appointmentsPerWeek = reader.readLongOrNull(offsets[0]);
   object.availableAppointments = reader.readLongOrNull(offsets[1]);
-  object.firstDateToSchedule = reader.readDateTimeOrNull(offsets[2]);
+  object.availableDates = reader.readDateTimeList(offsets[2]);
+  object.firstDateToSchedule = reader.readDateTimeOrNull(offsets[3]);
   object.id = id;
-  object.lastDateToSchedule = reader.readDateTimeOrNull(offsets[3]);
-  object.name = reader.readStringOrNull(offsets[4]);
-  object.orderId = reader.readLongOrNull(offsets[5]);
-  object.productId = reader.readLongOrNull(offsets[6]);
+  object.lastDateToSchedule = reader.readDateTimeOrNull(offsets[4]);
+  object.name = reader.readStringOrNull(offsets[5]);
+  object.orderId = reader.readLongOrNull(offsets[6]);
+  object.productId = reader.readLongOrNull(offsets[7]);
   object.scheduledAppointments = reader.readObjectList<Appointment>(
-    offsets[7],
+    offsets[8],
     AppointmentSchema.deserialize,
     allOffsets,
     Appointment(),
@@ -167,16 +180,18 @@ P _treatmentDeserializeProp<P>(
     case 1:
       return (reader.readLongOrNull(offset)) as P;
     case 2:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readDateTimeList(offset)) as P;
     case 3:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 4:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 5:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 6:
       return (reader.readLongOrNull(offset)) as P;
     case 7:
+      return (reader.readLongOrNull(offset)) as P;
+    case 8:
       return (reader.readObjectList<Appointment>(
         offset,
         AppointmentSchema.deserialize,
@@ -425,6 +440,169 @@ extension TreatmentQueryFilter
         upper: upper,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      availableDatesIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'availableDates',
+      ));
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      availableDatesIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'availableDates',
+      ));
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      availableDatesElementEqualTo(DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'availableDates',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      availableDatesElementGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'availableDates',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      availableDatesElementLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'availableDates',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      availableDatesElementBetween(
+    DateTime lower,
+    DateTime upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'availableDates',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      availableDatesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'availableDates',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      availableDatesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'availableDates',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      availableDatesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'availableDates',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      availableDatesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'availableDates',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      availableDatesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'availableDates',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      availableDatesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'availableDates',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -1260,6 +1438,12 @@ extension TreatmentQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Treatment, Treatment, QDistinct> distinctByAvailableDates() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'availableDates');
+    });
+  }
+
   QueryBuilder<Treatment, Treatment, QDistinct>
       distinctByFirstDateToSchedule() {
     return QueryBuilder.apply(this, (query) {
@@ -1312,6 +1496,13 @@ extension TreatmentQueryProperty
       availableAppointmentsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'availableAppointments');
+    });
+  }
+
+  QueryBuilder<Treatment, List<DateTime>?, QQueryOperations>
+      availableDatesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'availableDates');
     });
   }
 
@@ -1371,13 +1562,33 @@ const AppointmentSchema = Schema(
       name: r'date',
       type: IsarType.string,
     ),
-    r'id': PropertySchema(
+    r'dateTime': PropertySchema(
       id: 1,
+      name: r'dateTime',
+      type: IsarType.dateTime,
+    ),
+    r'id': PropertySchema(
+      id: 2,
       name: r'id',
       type: IsarType.long,
     ),
+    r'jiffyDate': PropertySchema(
+      id: 3,
+      name: r'jiffyDate',
+      type: IsarType.string,
+    ),
+    r'jiffyDateTime': PropertySchema(
+      id: 4,
+      name: r'jiffyDateTime',
+      type: IsarType.string,
+    ),
+    r'jiffyTime': PropertySchema(
+      id: 5,
+      name: r'jiffyTime',
+      type: IsarType.string,
+    ),
     r'time': PropertySchema(
-      id: 2,
+      id: 6,
       name: r'time',
       type: IsarType.string,
     )
@@ -1401,6 +1612,24 @@ int _appointmentEstimateSize(
     }
   }
   {
+    final value = object.jiffyDate;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.jiffyDateTime;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.jiffyTime;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.time;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -1416,8 +1645,12 @@ void _appointmentSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.date);
-  writer.writeLong(offsets[1], object.id);
-  writer.writeString(offsets[2], object.time);
+  writer.writeDateTime(offsets[1], object.dateTime);
+  writer.writeLong(offsets[2], object.id);
+  writer.writeString(offsets[3], object.jiffyDate);
+  writer.writeString(offsets[4], object.jiffyDateTime);
+  writer.writeString(offsets[5], object.jiffyTime);
+  writer.writeString(offsets[6], object.time);
 }
 
 Appointment _appointmentDeserialize(
@@ -1426,10 +1659,11 @@ Appointment _appointmentDeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = Appointment();
-  object.date = reader.readStringOrNull(offsets[0]);
-  object.id = reader.readLongOrNull(offsets[1]);
-  object.time = reader.readStringOrNull(offsets[2]);
+  final object = Appointment(
+    date: reader.readStringOrNull(offsets[0]),
+    id: reader.readLongOrNull(offsets[2]),
+    time: reader.readStringOrNull(offsets[6]),
+  );
   return object;
 }
 
@@ -1443,8 +1677,16 @@ P _appointmentDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 2:
+      return (reader.readLongOrNull(offset)) as P;
+    case 3:
+      return (reader.readStringOrNull(offset)) as P;
+    case 4:
+      return (reader.readStringOrNull(offset)) as P;
+    case 5:
+      return (reader.readStringOrNull(offset)) as P;
+    case 6:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1601,6 +1843,79 @@ extension AppointmentQueryFilter
     });
   }
 
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      dateTimeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'dateTime',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      dateTimeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'dateTime',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition> dateTimeEqualTo(
+      DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'dateTime',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      dateTimeGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'dateTime',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      dateTimeLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'dateTime',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition> dateTimeBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'dateTime',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Appointment, Appointment, QAfterFilterCondition> idIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1666,6 +1981,468 @@ extension AppointmentQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'jiffyDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'jiffyDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'jiffyDate',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'jiffyDate',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'jiffyDate',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'jiffyDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'jiffyDate',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'jiffyDate',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'jiffyDate',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'jiffyDate',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'jiffyDate',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'jiffyDate',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateTimeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'jiffyDateTime',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateTimeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'jiffyDateTime',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateTimeEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'jiffyDateTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateTimeGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'jiffyDateTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateTimeLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'jiffyDateTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateTimeBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'jiffyDateTime',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateTimeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'jiffyDateTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateTimeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'jiffyDateTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateTimeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'jiffyDateTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateTimeMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'jiffyDateTime',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateTimeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'jiffyDateTime',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyDateTimeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'jiffyDateTime',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyTimeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'jiffyTime',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyTimeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'jiffyTime',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyTimeEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'jiffyTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyTimeGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'jiffyTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyTimeLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'jiffyTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyTimeBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'jiffyTime',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyTimeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'jiffyTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyTimeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'jiffyTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyTimeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'jiffyTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyTimeMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'jiffyTime',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyTimeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'jiffyTime',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Appointment, Appointment, QAfterFilterCondition>
+      jiffyTimeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'jiffyTime',
+        value: '',
       ));
     });
   }

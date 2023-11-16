@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:light_center/Data/Models/Treatment/treatment_model.dart';
 import 'package:light_center/Data/Repositories/user_repository.dart';
 import 'package:light_center/Services/navigation_service.dart';
 import 'package:light_center/Data/Models/User/user_model.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 part 'user_state.dart';
 
@@ -180,108 +180,34 @@ class UserCubit extends Cubit<UserState> {
     }
   }
 
-  /*Appointments? getAppointmentsFromJson(Map<String, dynamic> json) {
-    Appointments appointments = Appointments();
-    appointments.availableAppointments = json['AvailableAppointments'];
-    appointments.appointmentsPerWeek = json['AppointmentsPerWeek'];
-    appointments.bookedDates = List<String>.from(json['BookedDates']);
-    appointments.scheduledAppointments = List<String>.from(json['ScheduledAppointments']);
-    appointments.firstDateToSchedule = DateTime.parse(json['FirstDateToSchedule']);
-    appointments.lastDateToSchedule = DateTime.parse(json['LastDateToSchedule']);
-    return appointments;
-  }*/
-
-
-
-  /*Future<void> getAvailableDates({int treatmentID = 0}) async {
+  Future<bool> scheduleAppointment({required DateTime day}) async {
     try {
       emit(UserLoading());
-      Map<String, dynamic> data = await _repository.getAvailableDates();
-      if (data.containsKey('Error')) {
-        emit(UserError(data['Error']));
-      } else {
-        User? user = await _repository.getUser();
-        if (user == null) {
-          emit(UserError('No se pudo accesar a la información del usuario'));
-        }
-        if (user?.appointments == null) {
-          emit(UserError('No se pudo accesar a la información de las citas agendadas.'));
-        }
-        user!.appointments = getAppointmentsFromJson(data);
-        await _repository.updateUser(user);
-        emit(UserLoaded(user: user));
+      User? user = await _repository.getUser();
+
+      if (user == null) {
+        emit(UserError('El usuario no pudo ser encontrado.'));
+        return false;
+      } else if (user.whatsappNumber == null || user.code == null || user.location.value == null) {
+        emit(UserError('El usuario no tiene todas sus credenciales.'));
+        return false;
       }
-    } catch (e) {
-      emit(UserError('Ocurrió un error al obtener las fechas: $e'));
-    }
-  }*/
 
-  /*Future<List<String>> getDaySchedule({required String day}) async {
-    try {
-      emit(UserLoading());
-      Map<String, dynamic> data = await _repository.getDaySchedule(day: day);
-      print(data);
-      if (data.containsKey('Error')) {
-        emit(UserError(data['Error']));
-      } else {
-        User? user = await _repository.getUser();
-        if (user == null) {
-          emit(UserError('No se pudo accesar a la información del usuario'));
-        }
-        if (user?.appointments == null) {
-          emit(UserError('No se pudo accesar a la información de las citas agendadas.'));
-        }
-        user!.appointments = getAppointmentsFromJson(data);
-        await _repository.updateUser(user);
-        emit(UserLoaded(user: user));
-      }
-    } catch (e) {
-      emit(UserError('Ocurrió un error al obtener las fechas: $e'));
-    }
-  }*/
-
-  Future<bool> scheduleAppointment({required String whatsappNumber, required DateTime day}) async {
-    try {
-      emit(UserLoading());
-      Map<String, dynamic> data = await _repository.scheduleAppointment(
-          whatsappNumber: whatsappNumber,
-          day: DateFormat.yMMMMd().add_Hm().toString()
+      Map<String, dynamic> result =  await _repository.scheduleAppointment(
+          user: user,
+          day: day
       );
 
-      if (data.containsKey('Error')) {
-        await showDialog(
-          context: NavigationService.context(),
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('Error'),
-            content: Text('Ocurrió un error al agendar.\n${data['Error']}'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cerrar',
-                  style: TextStyle(
-                      color: Colors.red
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-        return false;
-      } else if (data.containsKey('Success')) {
-        if (data['Success'] == false) {
-          return false;
-        } else {
-          return true;
-        }
+      if (result['scheduled'] == true) {
+        emit(UserLoaded(user: user));
+        return true;
+      } else {
+        emit(UserError(result['message']));
+       return false;
       }
-
-      await NavigationService.showSimpleErrorAlertDialog(
-          title: 'Error al cancelar',
-          content: 'Ocurrió un error en el servidor.');
-      return false;
     } catch (e) {
       await NavigationService.showSimpleErrorAlertDialog(
-          title: 'Error al cancelar',
+          title: 'Error al agendar',
           content: 'Ocurrió un error al agendar la cita: $e.');
       return false;
     }
@@ -318,32 +244,37 @@ class UserCubit extends Cubit<UserState> {
     }
   }
 
-  Future<bool> cancelAppointment({required String whatsappNumber, required DateTime day}) async {
+  Future<bool> cancelAppointment({required Appointment appointment}) async {
     try {
       emit(UserLoading());
-      Map<String, dynamic> data = await _repository.cancelAppointment(
-          whatsappNumber: whatsappNumber,
-          day: day.toIso8601String().substring(0,day.toIso8601String().indexOf('.'))
+
+      User? user = await _repository.getUser();
+
+      if (user == null) {
+        emit(UserError('El usuario no pudo ser encontrado.'));
+        return false;
+      } else if (user.whatsappNumber == null || user.code == null || user.location.value == null) {
+        emit(UserError('El usuario no tiene todas sus credenciales.'));
+        return false;
+      }
+
+      Map<String, dynamic> result =  await _repository.cancelAppointment(
+          user: user,
+          appointment: appointment
       );
 
-      if (data.containsKey('Error')) {
-        await NavigationService.showSimpleErrorAlertDialog(
-            title: 'Error al cancelar',
-            content: 'Ocurrió un error al cancelar la cita.\n${data['Error']}');
+      if (result['canceled'] == true) {
+        emit(UserUpdated());
+        return true;
+      } else {
+        emit(UserError(result['message']));
         return false;
-      } else if (data.containsKey('Success')) {
-        if (data['Success'] != false) {
-          return true;
-        }
       }
-      await NavigationService.showSimpleErrorAlertDialog(
-          title: 'Error al cancelar',
-          content: 'Ocurrió un error en el servidor.');
-      return false;
+
     } catch (e) {
       await NavigationService.showSimpleErrorAlertDialog(
           title: 'Error al cancelar',
-          content: 'Ocurrió un error al agendar la cita: $e.');
+          content: 'Ocurrió un error al cancelar la cita: $e.');
       return false;
     }
   }
@@ -397,7 +328,7 @@ class UserCubit extends Cubit<UserState> {
 
   Future<Map<String, dynamic>> validateCredentials() async {
     try {
-      emit(UserLoading());
+      //emit(UserLoading());
       User? user = await _repository.getUser();
 
       if (user == null) {
@@ -413,13 +344,67 @@ class UserCubit extends Cubit<UserState> {
       }
 
       Map<String, dynamic> result = await _repository.fetchUser(user: user);
-      emit(UserLoaded(user: user));
+      //emit(UserLoaded(user: user));
       return result;
     } catch (e) {
-      emit(UserError('Ocurrió un error al validar la información del usuario: $e'));
+      //emit(UserError('Ocurrió un error al validar la información del usuario: $e'));
       return {
         'validation': false,
         'message': e.toString()
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> getAppointmentsBySOAP() async {
+    try {
+      emit(UserLoading());
+      User? user = await _repository.getUser();
+
+      if (user == null) {
+        return {
+          'updated': false,
+          'message': 'El usuario no existe.'
+        };
+      } else if (user.whatsappNumber == null || user.code == null || user.location.value == null) {
+        return {
+          'updated': false,
+          'message': 'El usuario no tiene todas sus credenciales.'
+        };
+      }
+      //emit(UserLoaded(user: user));
+      return await _repository.fetchAppointments(user: user).whenComplete(() => emit(UserLoaded(user: user)));
+    } catch (e) {
+      emit(UserError('Ocurrió un error al obtener las citas agendadas: $e'));
+      return {
+        'updated': false,
+        'message': 'Ocurrió un error al obtener las citas agendadas: $e'
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> getAvailableDatesBySOAP() async {
+    try {
+      emit(UserLoading());
+      User? user = await _repository.getUser();
+
+      if (user == null) {
+        return {
+          'updated': false,
+          'message': 'El usuario no existe.'
+        };
+      } else if (user.whatsappNumber == null || user.code == null || user.location.value == null) {
+        return {
+          'updated': false,
+          'message': 'El usuario no tiene todas sus credenciales.'
+        };
+      }
+
+      return await _repository.fetchAvailableDates(user: user).whenComplete(() => emit(UserLoaded(user: user)));
+    } catch (e) {
+      emit(UserError('Ocurrió un error al obtener las fechas disponibles: $e'));
+      return {
+        'updated': false,
+        'message': 'Ocurrió un error al obtener las fechas disponibles: $e'
       };
     }
   }

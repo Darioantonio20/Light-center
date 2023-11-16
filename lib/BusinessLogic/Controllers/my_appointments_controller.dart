@@ -12,48 +12,6 @@ import 'package:light_center/extensions.dart';
 late UserCubit userCubit;
 late TreatmentCubit treatmentCubit;
 
-Future<void> fetchAppointments({required User user}) async {
-  String data = await sendSOAPRequest(
-      soapAction: 'http://tempuri.org/SPA_CITASRESERVADAS',
-      envelopeName: 'SPA_CITASRESERVADAS',
-      content: {
-        'DSNDataBase': user.location.value!.code,
-        'NoWhatsAPP': '521${user.whatsappNumber}',
-        'EXTERNAL_Idref_pedidospresup': user.treatments.last.orderId
-      }
-  );
-
-  if (data.contains('ERR:') || data.length == 1) {
-    if (data.length == 1) {
-      data = 'No cuenta con ninguna cita agendada.';
-    } else {
-      data = data.replaceAll("ERR: ", "");
-    }
-
-    return;
-    /*return {
-      'validation': false,
-      'message': data
-    };*/
-  } else {
-    user.treatments.last.scheduledAppointments = [];
-    for (String appointmentData in data.substring(0, data.length - 1).split('ð')) {
-      List<String> appointmentValues = appointmentData.split(',');
-      Appointment _currentAppointment = Appointment();
-      _currentAppointment.id = int.parse(appointmentValues.where((String element) => element.contains('id')).first.trim().trimEqualsData());
-      _currentAppointment.date = appointmentValues.where((String element) => element.contains('fecha')).first.trim().trimEqualsData();
-      _currentAppointment.time = appointmentValues.where((String element) => element.contains('hora')).first.trim().trimEqualsData();
-      if (_currentAppointment.time!.length == 1) {
-        _currentAppointment.time = '0${_currentAppointment.time}:00:00';
-      } else {
-        _currentAppointment.time = '${_currentAppointment.time}:00:00';
-      }
-      user.treatments.last.scheduledAppointments!.add(_currentAppointment);
-    }
-    treatmentCubit.updateTreatment(user.treatments.last);
-  }
-}
-
 List<Widget> scheduledAppointmentsList(List<String> appointmentsList) {
   List<Widget> scheduledAppointmentsList = [];
   if (appointmentsList.isNotEmpty) {
@@ -74,31 +32,12 @@ List<Widget> scheduledAppointmentsList(List<String> appointmentsList) {
   return scheduledAppointmentsList;
 }
 
-/*String pendingAppointments({required Appointments? appointments}) {
-  if (appointments != null) {
-    if (appointments.availableAppointments != null) {
-      return appointments.availableAppointments.toString();
-    }
-  }
-  return 'Sin datos...';
-}*/
-
 String pendingAppointments({required Treatment treatment}) {
   if (treatment.availableAppointments != null) {
     return treatment.availableAppointments.toString();
   }
   return 'Sin datos...';
 }
-
-
-/*String lastDateToSchedule({required Appointments? appointments}) {
-  if (appointments != null) {
-    if (appointments.lastDateToSchedule != null) {
-      return DateFormat.yMd('es-MX').format(appointments.lastDateToSchedule!).toString();
-    }
-  }
-  return 'Sin asignar...';
-}*/
 
 String lastDateToSchedule({required Treatment treatment}) {
   if (treatment.lastDateToSchedule != null) {
@@ -107,12 +46,12 @@ String lastDateToSchedule({required Treatment treatment}) {
   return 'Sin asignar...';
 }
 
-void cancelAppointment({required BuildContext context, required DateTime day, required User user}) {
+void cancelAppointment({required BuildContext context, required Appointment appointment}) {
   showDialog(
     context: context,
     builder: (BuildContext context) => AlertDialog(
       title: const Text('¿Cancelar cita?'),
-      content: Text('¿Deseas cancelar la cita agendada el ${DateFormat.yMMMMd('es-MX').format(day)} a la(s) ${DateFormat.jm().format(day)}?'),
+      content: Text('¿Deseas cancelar la cita agendada el ${appointment.jiffyDate} a la(s) ${appointment.jiffyTime}?'),
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.pop(context),
@@ -125,7 +64,7 @@ void cancelAppointment({required BuildContext context, required DateTime day, re
         TextButton(
           onPressed: () async {
             NavigationService.pop();
-            bool cancelResult = await userCubit.cancelAppointment(whatsappNumber: user.whatsappNumber!, day: day);
+            bool cancelResult = await userCubit.cancelAppointment(appointment: appointment);
             await NavigationService.showAlertDialog(
                 title: Text(cancelResult == true ? 'Éxito al cancelar' : 'Error al cancelar',
                     style: TextStyle(
@@ -140,8 +79,8 @@ void cancelAppointment({required BuildContext context, required DateTime day, re
                         size: 80,
                       ),
 
-                      Text(cancelResult == true ? 'La cita para el ${DateFormat.yMMMMd('es-MX').format(day)} a la(s) '
-                          '${DateFormat.jm().format(day)}, se canceló exitosamente'
+                      Text(cancelResult == true ? 'La cita para del ${appointment.jiffyDate} a la(s) '
+                          '${appointment.jiffyTime}, se canceló exitosamente'
                           : 'La cita no pudo ser cancelada.')
                     ]),
                 actions: <Widget>[
@@ -155,8 +94,6 @@ void cancelAppointment({required BuildContext context, required DateTime day, re
                   ),
                 ]
             );
-            // Closing modalShow
-            NavigationService.pop();
             userCubit.emitUpdate();
           },
           child: const Text('Sí',

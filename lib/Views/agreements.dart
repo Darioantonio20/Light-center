@@ -95,11 +95,11 @@ class Agreements extends StatelessWidget {
                     valueListenable: sessionIndications,
                     builder: (context, acceptIndications, _) {
                       return FilledButton(
-                          onPressed: acceptRegulations && acceptIndications ? () {
+                          onPressed: acceptRegulations && acceptIndications ? () async {
                             if (internalRegulations.value == false || sessionIndications.value == false) {
-                              NavigationService.showSimpleErrorAlertDialog(title: 'Error', content: 'Es necesario aceptar los términos y condiciones del spa así cómo entender las directivas de atención.');
+                              await NavigationService.showSimpleErrorAlertDialog(title: 'Error', content: 'Es necesario aceptar los términos y condiciones del spa así cómo entender las directivas de atención.');
                             } else {
-                              NavigationService.pushReplacementNamed(NavigationService.loginScreen);
+                              await NavigationService.pushReplacementNamed(NavigationService.loginScreen);
                             }
                           } : null,
                           child: const Text('Continuar')

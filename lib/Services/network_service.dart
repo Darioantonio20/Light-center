@@ -172,6 +172,8 @@ Future<String> sendSOAPRequest({required String soapAction, required String enve
       });
   final document = builder.buildDocument();
 
+  print(document.toString());
+
   final response = await http.post(
       requestUri,
       headers: soapHeaders,

@@ -41,12 +41,12 @@ class Login extends StatelessWidget {
 
         if (state.user.whatsappNumber != null && state.user.code != null && state.user.location.value != null) {
           userCubit.validateCredentials().then((value) async {
-            print(value);
             if (value['validation'] == true) {
+              await userCubit.getAppointmentsBySOAP();
               await NavigationService.pushReplacementNamed(NavigationService.dashboardScreen);
             } else {
-              await userCubit.removeUserCode();
               await NavigationService.showSimpleErrorAlertDialog(title: 'Error al iniciar sesión', content: value['message']);
+              await userCubit.removeUserCode();
             }
           });
           //validateUser(user: state.user);
