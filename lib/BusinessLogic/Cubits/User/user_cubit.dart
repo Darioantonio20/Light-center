@@ -199,7 +199,7 @@ class UserCubit extends Cubit<UserState> {
       );
 
       if (result['scheduled'] == true) {
-        emit(UserLoaded(user: user));
+        emit(UserUpdated());
         return true;
       } else {
         emit(UserError(result['message']));
@@ -288,8 +288,6 @@ class UserCubit extends Cubit<UserState> {
         emit(UserError(data['Error']));
       } else {
         user.name = data['Name'];
-        //user.currentTreatment = data['DesiredTreatment'];
-        //user.appointments = getAppointmentsFromJson(data['Appointments']);
         if (await _repository.updateUser(user)) {
           emit(UserLoaded(user: user));
         } else {

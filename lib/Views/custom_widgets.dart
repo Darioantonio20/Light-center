@@ -8,27 +8,32 @@ import 'package:light_center/Services/navigation_service.dart';
 import 'package:light_center/colors.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+Row lightCenterText = Row(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    Text("Light",
+        style: TextStyle(color: LightCenterColors.mainBrown)
+    ),
+    Container(
+      color: LightCenterColors.mainPurple,
+      child: const Text('CENTER',
+        style: TextStyle(
+            color: Colors.white
+        ),
+      ),
+    )
+  ],
+);
 
 AppBar commonAppBar({
   Widget? title,
+  List<Widget>? actions,
+  Widget? leading
   }) {
   return AppBar(
-    title: title ?? Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text("Light",
-            style: TextStyle(color: LightCenterColors.mainBrown)
-        ),
-        Container(
-          color: LightCenterColors.mainPurple,
-          child: const Text('CENTER',
-            style: TextStyle(
-                color: Colors.white
-            ),
-          ),
-        )
-      ],
-    ),
+    automaticallyImplyLeading: leading == null,
+    leading: leading,
+    title: title ?? Image.asset('assets/images/logo_horizontal.png', width: MediaQuery.of(NavigationService.context()).size.width * 0.5),
     flexibleSpace: Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -39,7 +44,7 @@ AppBar commonAppBar({
     ),
     backgroundColor: Colors.deepPurpleAccent,
     centerTitle: true,
-    actions: [
+    actions: actions ?? [
       IconButton(
           onPressed: () => showAboutDialog(
               context: NavigationService.context(),
@@ -50,94 +55,100 @@ AppBar commonAppBar({
                   width: 50,
                   height: 50
               ),
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                    top: 20,
-                    bottom: 20
-                ),
-                child: Row(
-                  children: [
-                    const Text('Desarrollador: ',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14
-                        )
-                    ),
-                    GestureDetector(
-                      onTap: () => NavigationService.openURL(baseUrl: 'github.com', endPoint: '/ChuyEx'),
-                      child: Text('ChuyEx',
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 20,
+                      bottom: 20
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('Desarrollador: ',
                           style: TextStyle(
-                              color: LightCenterColors.mainPurple,
                               fontWeight: FontWeight.bold,
                               fontSize: 14
                           )
                       ),
-                    )
-                  ],
+                      GestureDetector(
+                        onTap: () => NavigationService.openURL(baseUrl: 'github.com', endPoint: '/ChuyEx'),
+                        child: Text('ChuyEx',
+                            style: TextStyle(
+                                color: LightCenterColors.mainPurple,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14
+                            )
+                        ),
+                      )
+                    ],
+                  ),
                 ),
-              ),
 
-              const Center(child: Text('Contacta a la consultora',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18
-                ))
-              ),
-
-              Padding(
-                padding: const EdgeInsets.only(
-                    top: 10,
-                    bottom: 10
+                const Center(child: Text('Contacta a la consultora',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18
+                    ))
                 ),
-                child: Row(
+
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 10,
+                      bottom: 10
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('Pagina Web: '),
+                      Flexible(
+                        child: GestureDetector(
+                          onTap: () => NavigationService.openURL(baseUrl: 'predictionsoft.com.mx', endPoint: ''),
+                          child: Text('predictionsoft.com.mx', style: TextStyle(color: LightCenterColors.mainPurple)),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+
+                Row(
                   children: [
-                    const Text('Pagina Web: '),
-                    GestureDetector(
-                      onTap: () => NavigationService.openURL(baseUrl: 'predictionsoft.com.mx', endPoint: ''),
-                      child: Text('predictionsoft.com.mx', style: TextStyle(color: LightCenterColors.mainPurple)),
+                    const Text('Email: '),
+                    Flexible(
+                      child: GestureDetector(
+                        onTap: () => NavigationService.sendEmail(email: 'ventas@predictionsoft.com.mx'),
+                        child: Text('ventas@predictionsoft.com.mx', style: TextStyle(color: LightCenterColors.mainPurple)),
+                      ),
                     )
                   ],
                 ),
-              ),
 
-              Row(
-                children: [
-                  const Text('Email: '),
-                  GestureDetector(
-                    onTap: () => NavigationService.sendEmail(email: 'ventas@predictionsoft.com.mx'),
-                    child: Text('ventas@predictionsoft.com.mx', style: TextStyle(color: LightCenterColors.mainPurple)),
-                  )
-                ],
-              ),
-
-              Padding(
-                padding: const EdgeInsets.only(
-                    top: 10,
-                    bottom: 10
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 10,
+                      bottom: 10
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('Facebook: '),
+                      Flexible(
+                        child: GestureDetector(
+                          onTap: () => NavigationService.openURL(baseUrl: 'facebook.com', endPoint: '/PredictionSOFTwareNube'),
+                          child: Text('PredictionSOFTwareNube', style: TextStyle(color: LightCenterColors.mainPurple)),
+                        ),
+                      )
+                    ],
+                  ),
                 ),
-                child: Row(
+
+                Row(
                   children: [
-                    const Text('Facebook: '),
+                    const Text('Teléfono: '),
                     GestureDetector(
-                      onTap: () => NavigationService.openURL(baseUrl: 'facebook.com', endPoint: '/PredictionSOFTwareNube'),
-                      child: Text('PredictionSOFTwareNube', style: TextStyle(color: LightCenterColors.mainPurple)),
+                      onTap: () => NavigationService.makeCall(phoneNumber: '5219613662079'),
+                      child: Text('9613662079', style: TextStyle(color: LightCenterColors.mainPurple)),
                     )
                   ],
                 ),
-              ),
-
-              Row(
-                children: [
-                  const Text('Teléfono: '),
-                  GestureDetector(
-                    onTap: () => NavigationService.makeCall(phoneNumber: '5219613662079'),
-                    child: Text('9613662079', style: TextStyle(color: LightCenterColors.mainPurple)),
-                  )
-                ],
-              ),
-            ]
+              ]
           ),
           icon: const Icon(Icons.info))
     ],
@@ -302,9 +313,11 @@ SizedBox eventsModalSheet({required BuildContext context, required DateTime sele
                 ),
 
                 const Spacer(),
-                IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(Icons.close, color: LightCenterColors.mainPurple))
+                Flexible(
+                  child: IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(Icons.close, color: LightCenterColors.mainPurple)),
+                )
               ],
             ),
           ),

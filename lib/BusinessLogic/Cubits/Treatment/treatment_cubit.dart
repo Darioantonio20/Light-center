@@ -1,12 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:light_center/Data/Repositories/treatment_repository.dart';
 import 'package:light_center/Data/Repositories/user_repository.dart';
-import 'package:light_center/Services/navigation_service.dart';
 import 'package:light_center/Data/Models/Treatment/treatment_model.dart';
 import 'package:light_center/Data/Models/User/user_model.dart';
-import 'package:flutter/material.dart';
-import 'package:light_center/Views/home.dart';
-import 'package:intl/intl.dart';
 
 part 'treatment_state.dart';
 
@@ -75,140 +71,6 @@ class TreatmentCubit extends Cubit<TreatmentState> {
       return null;
     }
   }
-
-  /*Future<bool> scheduleAppointment({required String whatsappNumber, required DateTime day}) async {
-    try {
-      emit(TreatmentLoading());
-      Map<String, dynamic> data = await _repository.scheduleAppointment(
-          whatsappNumber: whatsappNumber,
-          day: DateFormat.yMMMMd().add_Hm().toString()
-      );
-
-      if (data.containsKey('Error')) {
-        await showDialog(
-          context: NavigationService.context(),
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('Error'),
-            content: Text('Ocurrió un error al agendar.\n${data['Error']}'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cerrar',
-                  style: TextStyle(
-                      color: Colors.red
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-        return false;
-      } else if (data.containsKey('Success')) {
-        if (data['Success'] == false) {
-          return false;
-        } else {
-          return true;
-        }
-      }
-
-      await NavigationService.showSimpleErrorAlertDialog(
-          title: 'Error al cancelar',
-          content: 'Ocurrió un error en el servidor.');
-      return false;
-    } catch (e) {
-      await NavigationService.showSimpleErrorAlertDialog(
-          title: 'Error al cancelar',
-          content: 'Ocurrió un error al agendar la cita: $e.');
-      return false;
-    }
-  }*/
-
-  /*Future<bool> updateAppointment({required String whatsappNumber, required DateTime day, required DateTime previousDay}) async {
-    try {
-      emit(TreatmentLoading());
-      Map<String, dynamic> data = await _repository.updateAppointment(
-          whatsappNumber: whatsappNumber,
-          day: day.toIso8601String().substring(0,day.toIso8601String().indexOf('.')),
-          previousDay: previousDay.toIso8601String().substring(0,day.toIso8601String().indexOf('.'))
-      );
-
-      if (data.containsKey('Error')) {
-        await NavigationService.showSimpleErrorAlertDialog(
-            title: 'Error al actualizar',
-            content: 'Ocurrió un error al actualizar la cita.\n${data['Error']}');
-        return false;
-      } else if (data.containsKey('Success')) {
-        if (data['Success'] != false) {
-          return true;
-        }
-      }
-      await NavigationService.showSimpleErrorAlertDialog(
-          title: 'Error al actualizar',
-          content: 'Ocurrió un error en el servidor.');
-      return false;
-    } catch (e) {
-      await NavigationService.showSimpleErrorAlertDialog(
-          title: 'Error al actualizar',
-          content: 'Ocurrió un error al re-agendar la cita: $e.');
-      return false;
-    }
-  }*/
-
-  /*Future<bool> cancelAppointment({required String whatsappNumber, required DateTime day}) async {
-    try {
-      emit(TreatmentLoading());
-      Map<String, dynamic> data = await _repository.cancelAppointment(
-          whatsappNumber: whatsappNumber,
-          day: day.toIso8601String().substring(0,day.toIso8601String().indexOf('.'))
-      );
-
-      if (data.containsKey('Error')) {
-        await NavigationService.showSimpleErrorAlertDialog(
-            title: 'Error al cancelar',
-            content: 'Ocurrió un error al cancelar la cita.\n${data['Error']}');
-        return false;
-      } else if (data.containsKey('Success')) {
-        if (data['Success'] != false) {
-          return true;
-        }
-      }
-      await NavigationService.showSimpleErrorAlertDialog(
-          title: 'Error al cancelar',
-          content: 'Ocurrió un error en el servidor.');
-      return false;
-    } catch (e) {
-      await NavigationService.showSimpleErrorAlertDialog(
-          title: 'Error al cancelar',
-          content: 'Ocurrió un error al agendar la cita: $e.');
-      return false;
-    }
-  }*/
-
-  /*void reloadTreatmentData() async {
-    try {
-      emit(TreatmentLoading());
-      Treatment? treatment = await _repository.getTreatment();
-      Map<String, dynamic> data = await _repository.loginWithCredentials(whatsappNumber: treatment!.whatsappNumber!, treatmentCode: treatment.code!);
-      if (data.containsKey('Error')) {
-        emit(TreatmentError(data['Error']));
-      } else {
-        treatment.name = data['Name'];
-        //treatment.currentTreatment = data['DesiredTreatment'];
-        //treatment.appointments = getAppointmentsFromJson(data['Appointments']);
-        treatment.treatments = getTreatmentsFromJson(data['Treatments']);
-        if (await _repository.updateTreatment(treatment)) {
-          emit(TreatmentLoaded(treatment: treatment));
-        } else {
-          emit(TreatmentError('Ocurrió un error al actualizar la información del usuario'));
-        }
-      }
-    } catch(e) {
-      emit(TreatmentError('Ocurrió un error al recargar la información del usuario: $e'));
-      Future.delayed(const Duration(seconds: 5), () {
-        reloadTreatmentData();
-      });
-    }
-  }*/
 
   void emitUpdate() {
     emit(TreatmentUpdated());

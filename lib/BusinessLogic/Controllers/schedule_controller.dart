@@ -18,72 +18,7 @@ late final ValueNotifier<List<Event>> selectedEvents;
 late ValueNotifier<DateTime?> selectedDay;
 late ValueNotifier<DateTime> focusedDay;
 List<DateTime> availableDates = [];
-late ValueNotifier<List<DateTime>> available2Dates;
-
-/*DateTime getFirstDateToSchedule({required Appointments? appointments}) {
-  if (appointments != null) {
-    if (appointments.firstDateToSchedule != null) {
-      if (appointments.firstDateToSchedule!.isAfter(DateTime.now())) {
-        return appointments.firstDateToSchedule!;
-      }
-    }
-  }
-  return DateTime.now();
-}*/
-
-Future<List<DateTime>> getAvailableDays({required User user}) async {
-  await user.treatments.load();
-
-  String data = await sendSOAPRequest(
-      soapAction: 'http://tempuri.org/SPA_FECHASDISPONIBLES',
-      envelopeName: 'SPA_FECHASDISPONIBLES',
-      content: {
-        'DSNDataBase': user.location.value!.code,
-        'NoWhatsAPP': '521${user.whatsappNumber}',
-        'EXTERNAL_Idref_pedidospresup': user.treatments.last.orderId
-      }
-  );
-  print('Fechas');
-  print(data);
-  focusedDay = ValueNotifier<DateTime>(DateTime.now());
-  selectedDay = ValueNotifier<DateTime>(DateTime.now());
-  if (data.contains("ERR:")) {
-    return [];
-  }
-
-  List<String> datesAux = data.split('€');
-  String datesString = datesAux[0].substring(0, data.lastIndexOf(","));
-
-  List<DateTime> dates = [];
-
-  for (String date in datesString.split(",")) {
-    try {
-      dates.add(Jiffy.parse(date.trim(), pattern: 'dd/MM/yyyy').dateTime);
-    } catch(e) {
-      return [];
-    }
-  }
-
-  dates.sort((a,b) => a.compareTo(b));
-  return dates;
-}
-
-DateTime getLastDateToSchedule({required DateTime? validity}) {
-  return validity ?? DateTime.now();
-}
-
-/*List<Event> generateEventsList({required User user}) {
-  List<Event> eventsList = [];
-  if (user.appointments?.scheduledAppointments != null) {
-    List<String> scheduledList = user.appointments!.scheduledAppointments ?? [];
-    List<String> bookedList = user.appointments!.bookedDates ?? [];
-    scheduledList.addAll(bookedList);
-    for (var appointment in scheduledList) {
-      eventsList.add(Event(title: 'Tratamiento de ${user.currentTreatment!}', dateTime: DateTime.parse(appointment)));
-    }
-  }
-  return eventsList;
-}*/
+late bool scheduled;
 
 void showModal({required BuildContext context, required List<Event> events, required List<String> schedule, required User user}) {
   showModalBottomSheet<void>(
@@ -195,6 +130,8 @@ Future<void> scheduleAppointment({required BuildContext context, required DateTi
             onPressed: () async {
               Navigator.pop(context);
               bool scheduleResult = await userCubit.scheduleAppointment(day: day);
+              scheduled = true;
+
               await showDialog(
                 context: NavigationService.context(),
                 builder: (BuildContext context) => AlertDialog(
@@ -218,7 +155,6 @@ Future<void> scheduleAppointment({required BuildContext context, required DateTi
                   ),
                   actions: <Widget>[
                     TextButton(
-                      //onPressed: () => Navigator.pop(context),
                       onPressed: () => NavigationService.pop(),
                       child: Text('Cerrar',
                         style: TextStyle(
@@ -293,66 +229,3 @@ void manageScheduledAppointment({required BuildContext context, required DateTim
     ),
   );
 }
-
-/*void cancelAppointment({required BuildContext context, required DateTime day, required User user}) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) => AlertDialog(
-      title: const Text('¿Cancelar cita?'),
-      content: Text('¿Deseas cancelar la cita agendada el ${DateFormat.yMMMMd('es-MX').format(day)} a la(s) ${DateFormat.jm().format(day)}?'),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text('No',
-            style: TextStyle(
-              color: LightCenterColors.mainPurple
-            ),
-          ),
-        ),
-        TextButton(
-          onPressed: () async {
-            NavigationService.pop();
-            bool cancelResult = await userCubit.cancelAppointment(appointment: appointment);
-            await NavigationService.showAlertDialog(
-                title: Text(cancelResult == true ? 'Éxito al cancelar' : 'Error al cancelar',
-                    style: TextStyle(
-                        color: cancelResult ? LightCenterColors.mainPurple : LightCenterColors.mainBrown
-                    )
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(cancelResult ? Icons.check : Icons.close,
-                      color: cancelResult ? Colors.green : Colors.red,
-                      size: 80,
-                    ),
-
-                    Text(cancelResult == true ? 'La cita para el ${DateFormat.yMMMMd('es-MX').format(day)} a la(s) '
-                        '${DateFormat.jm().format(day)}, se canceló exitosamente'
-                        : 'La cita no pudo ser cancelada.')
-                  ]),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () => NavigationService.pop(),
-                    child: Text('Cerrar',
-                      style: TextStyle(
-                          color: LightCenterColors.mainPurple
-                      ),
-                    ),
-                  ),
-                ]
-            );
-            // Closing modalShow
-            NavigationService.pop();
-            userCubit.emitUpdate();
-          },
-          child: const Text('Sí',
-            style: TextStyle(
-              color: Colors.red
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}*/

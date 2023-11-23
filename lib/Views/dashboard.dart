@@ -13,9 +13,9 @@ class Dashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    UserCubit _userCubit = BlocProvider.of<UserCubit>(context);
-    Widget? _currentScreen;
-    _userCubit.getUser();
+    UserCubit userCubit = BlocProvider.of<UserCubit>(context);
+    Widget? currentScreen;
+    userCubit.getUser();
 
     return Scaffold(
       appBar: commonAppBar(),
@@ -66,25 +66,26 @@ class Dashboard extends StatelessWidget {
       ),
       body: BlocBuilder<UserCubit, UserState>(builder: (context, state) {
         if (state is UserUpdated || state is UserSaved) {
-          _userCubit.getUser();
-          _currentScreen = updatingScreen(context: context);
+          userCubit.getUser();
+          currentScreen = updatingScreen(context: context);
         }
 
         if (state is UserLoading) {
-          _currentScreen = loadingScreen(context: context);
+          currentScreen = loadingScreen(context: context);
         }
 
         if (state is UserLoaded) {
           state.user.treatments.load();
-          _currentScreen = SingleChildScrollView(
+          currentScreen = SingleChildScrollView(
             physics: const ClampingScrollPhysics(),
             child: Column(
               children: [
                 Visibility(
                   visible: state.user.treatments.last.scheduledAppointments!.isNotEmpty,
                     child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.tealAccent,
+                        decoration: BoxDecoration(
+                          color: LightCenterColors.mainPurple.withOpacity(0.9),
+                          //color: Color.fromRGBO(80, 50, 124, 0.75),
                         ),
                         child: Text('Su próxima cita es el día ${state.user.treatments.last.scheduledAppointments!.isNotEmpty ? state.user.treatments.last.scheduledAppointments!.first.jiffyDate : ''}',
                           textAlign: TextAlign.center,
@@ -220,12 +221,12 @@ class Dashboard extends StatelessWidget {
         }
 
         if (state is UserError) {
-          _currentScreen = errorScreen(context: context, errorMessage: state.errorMessage.toString());
+          currentScreen = errorScreen(context: context, errorMessage: state.errorMessage.toString());
         }
 
-        _currentScreen ??= invalidStateScreen(context: context);
+        currentScreen ??= invalidStateScreen(context: context);
 
-        return _currentScreen!;
+        return currentScreen!;
       }),
     );
   }

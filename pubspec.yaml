@@ -90,6 +90,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/animation.mp4
-    - assets/splash_art_lc.png
     - assets/documents/
     - assets/images/

@@ -55,6 +55,11 @@ class NavigationService {
     return _navigationKey.currentState!.popAndPushNamed(route, arguments: arguments);
   }
 
+  static Future<dynamic> cleanNavigation(String route, { Object? arguments }) {
+    _navigationKey.currentState!.popUntil((route) => route.isFirst);
+    return _navigationKey.currentState!.pushReplacementNamed(route, arguments: arguments);
+  }
+
   static void pop() {
     return _navigationKey.currentState!.pop();
   }
@@ -140,7 +145,7 @@ class NavigationService {
     }
   }
 
-  static void sendEmail({String email = 'lightcenter.merida.oficial@gmail.com'}) async {
+  static void sendEmail({String email = 'lightcenterclinicas@predictionsoft.com.mx'}) async {
     Uri requestUri = Uri(
       scheme: 'mailto',
       path: email

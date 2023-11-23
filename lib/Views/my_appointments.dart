@@ -28,6 +28,7 @@ class MyAppointments extends StatelessWidget {
       }
 
       if (state is UserLoaded) {
+        state.user.treatments.last.scheduledAppointments ??= [];
         if (state.user.treatments.last.scheduledAppointments!.isEmpty) {
           return Center(
             child: Column(

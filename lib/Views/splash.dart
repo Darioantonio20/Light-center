@@ -11,10 +11,10 @@ class Splash extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    VideoPlayerController _controller = VideoPlayerController.asset('assets/animation.mp4');
+    VideoPlayerController controller = VideoPlayerController.asset('assets/animation.mp4');
     ValueNotifier<bool> videoLoadedNotifier = ValueNotifier<bool>(false);
-    _controller.initialize().then((value) async {
-      await _controller.play();
+    controller.initialize().then((value) async {
+      await controller.play();
       videoLoadedNotifier.value = true;
     });
 
@@ -22,44 +22,50 @@ class Splash extends StatelessWidget {
       body: ValueListenableBuilder(
         valueListenable: videoLoadedNotifier,
         builder: (context, isLoaded, _) {
-          if (_controller.value.isInitialized) {
-            UserCubit _userCubit = BlocProvider.of<UserCubit>(context);
+          if (controller.value.isInitialized) {
+            UserCubit userCubit = BlocProvider.of<UserCubit>(context);
             LocationCubit locationCubit = BlocProvider.of<LocationCubit>(context);
-            _userCubit.getUser();
+            userCubit.getUser();
 
-            return FutureBuilder<Map<String, dynamic>>(
-                future: _userCubit.validateCredentials(),
-                builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
-                  if (snapshot.hasData) {
-                    Future.delayed(const Duration(seconds: 8), (){
-                      _controller.dispose().whenComplete(() async {
-                        if (snapshot.data!['validation'] == true)  {
-                          await _userCubit.getAppointmentsBySOAP();
-                          await NavigationService.pushReplacementNamed(NavigationService.dashboardScreen);
-                        } else {
-                          if (snapshot.data!['message'] == 'El usuario no existe.') {
-                            await NavigationService.pushReplacementNamed(NavigationService.agreementsScreen);
+            return Container(
+              height: MediaQuery.of(context).size.height,
+              color: Colors.white,
+              child: FutureBuilder<Map<String, dynamic>>(
+                  future: userCubit.validateCredentials(),
+                  builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
+                    if (snapshot.hasData) {
+                      Future.delayed(const Duration(seconds: 8), (){
+                        controller.dispose().whenComplete(() async {
+                          if (snapshot.data!['validation'] == true)  {
+                            await userCubit.getAppointmentsBySOAP();
+                            await NavigationService.pushReplacementNamed(NavigationService.dashboardScreen);
                           } else {
-                            await NavigationService.pushReplacementNamed(NavigationService.loginScreen);
+                            if (snapshot.data!['message'] == 'El usuario no existe.') {
+                              await NavigationService.pushReplacementNamed(NavigationService.agreementsScreen);
+                            } else {
+                              await NavigationService.pushReplacementNamed(NavigationService.loginScreen);
+                            }
                           }
-                        }
+                        });
                       });
-                    });
 
-                    if (snapshot.data!['validation'] == false) {
-                      locationCubit.fetchLocations();
+                      if (snapshot.data!['validation'] == false) {
+                        locationCubit.fetchLocations();
+                      }
+
+                      return Center(
+                        child: AspectRatio(
+                          aspectRatio: controller.value.aspectRatio,
+                          child: VideoPlayer(controller),
+                        ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return errorScreen(context: context, errorMessage: 'La información del usuario no pudo ser cargada');
+                    } else {
+                      return loadingScreen(context: context);
                     }
-
-                    return AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
-                    );
-                  } else if (snapshot.hasError) {
-                    return errorScreen(context: context, errorMessage: 'La información del usuario no pudo ser cargada');
-                  } else {
-                    return loadingScreen(context: context);
                   }
-                }
+              ),
             );
           } else {
             return loadingScreen(context: context);

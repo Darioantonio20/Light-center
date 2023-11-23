@@ -144,6 +144,7 @@ final Map<String, String> soap2Headers = {
 /// ```
 Future<String> sendSOAPRequest({required String soapAction, required String envelopeName, required Map<String, dynamic> content}) async {
   soapHeaders['SOAPAction'] = soapAction;
+  content['TokenAutentificacion'] = 'CriterioOcultoDecifrar@+-.app2023';
 
   Uri requestUri = Uri.http('$soapIP:$soapPort', '/$soapServiceEndPoint', {'q': '{http}'});
   final builder = xml.XmlBuilder();
@@ -171,8 +172,6 @@ Future<String> sendSOAPRequest({required String soapAction, required String enve
         });
       });
   final document = builder.buildDocument();
-
-  print(document.toString());
 
   final response = await http.post(
       requestUri,

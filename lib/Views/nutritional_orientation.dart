@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:light_center/Services/navigation_service.dart';
 import 'package:light_center/Services/network_service.dart';
 import 'package:light_center/Views/custom_widgets.dart';
 import 'package:light_center/colors.dart';
@@ -14,7 +15,15 @@ class NutritionalOrientation extends StatelessWidget {
 
     return Scaffold(
       appBar: commonAppBar(
-        title: const Text('Orientación Nutricional')
+          title: const Text('Orientación Nutricional'),
+          actions: [
+            IconButton(
+                onPressed: () => NavigationService.showSimpleErrorAlertDialog(
+                  title: '¿Cómo funciona?',
+                  content: 'Deslice su dedo de izquierda a derecha para mostrar la siguiente imagen, para regresar a la imagen anterior, deslice de derecha a izquierda.',
+                ),
+                icon: const Icon(Icons.help)),
+          ]
       ),
       body: FutureBuilder<List<String>>(
         future: getNutritionalOrientation(),

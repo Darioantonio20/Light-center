@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:light_center/BusinessLogic/Cubits/Treatment/treatment_cubit.dart';
-import 'package:light_center/BusinessLogic/Cubits/User/user_cubit.dart';
 import 'package:light_center/Data/Models/Treatment/treatment_model.dart';
 import 'package:light_center/Data/Models/User/user_model.dart';
 import 'package:light_center/Services/navigation_service.dart';
@@ -155,9 +154,6 @@ class UserRepository {
           'EXTERNAL_Idref_pedidospresup': user.treatments.last.orderId
         }
     );
-    print('Fechas');
-    print(data);
-
     if (data.contains("ERR:")) {
       return [];
     }
@@ -192,9 +188,6 @@ class UserRepository {
         }
     );
 
-    print('El texto al agendar');
-    print(data);
-
     if (data.contains('ERR:')) {
       if (data.length == 1) {
         data = 'La cita no pudo ser agendada.';
@@ -207,7 +200,7 @@ class UserRepository {
         'message': data
       };
     } else {
-      print('No hay error');
+
       user.treatments.last.availableAppointments = int.parse(data);
       await isar.writeTxn(() => isar.treatments.put(user.treatments.last));
       await user.treatments.save();
@@ -244,9 +237,6 @@ class UserRepository {
         }
     );
 
-    print('El texto al cancelar');
-    print(data);
-
     if (data.contains('ERR:') || data.length == 1) {
       if (data.length == 1) {
         data = 'La cita no pudo ser cancelada.';
@@ -261,6 +251,11 @@ class UserRepository {
     } else {
       if (data.contains('Ok')) {
         user.treatments.last.availableAppointments = user.treatments.last.availableAppointments! + 1;
+        if (user.treatments.last.scheduledAppointments!.length > 1) {
+          user.treatments.last.scheduledAppointments!.remove(appointment);
+        } else {
+          user.treatments.last.scheduledAppointments = [];
+        }
         await isar.writeTxn(() => isar.treatments.put(user.treatments.last));
         await user.treatments.save();
         return {
@@ -321,7 +316,8 @@ class UserRepository {
 
           if (!datosPaciente.where((String element) => element.contains('fproxcitaclinica')).first.trimEqualsData().contains('nodisponible')) {
             currentTreatment.scheduledAppointments = [Appointment(
-                date: datosPaciente.where((String element) => element.contains('fproxcitaclinica')).first.trimEqualsData()
+                date: datosPaciente.where((String element) => element.contains('fproxcitaclinica')).first.trimEqualsData(),
+                time: datosPaciente.where((String element) => element.contains('fproxcitaclinicahora')).first.trimEqualsData()
             )];
           } else {
             currentTreatment.scheduledAppointments = [];
@@ -383,23 +379,23 @@ class UserRepository {
       user.treatments.last.scheduledAppointments = [];
       for (String appointmentData in data.substring(0, data.length - 1).split('ð')) {
         List<String> appointmentValues = appointmentData.split(',');
-        Appointment _currentAppointment = Appointment();
-        _currentAppointment.id = int.parse(appointmentValues.where((String element) => element.contains('id')).first.trim().trimEqualsData());
-        _currentAppointment.date = appointmentValues.where((String element) => element.contains('fecha')).first.trim().trimEqualsData();
-        _currentAppointment.time = appointmentValues.where((String element) => element.contains('hora')).first.trim().trimEqualsData();
+        Appointment currentAppointment = Appointment();
+        currentAppointment.id = int.parse(appointmentValues.where((String element) => element.contains('id')).first.trim().trimEqualsData());
+        currentAppointment.date = appointmentValues.where((String element) => element.contains('fecha')).first.trim().trimEqualsData();
+        currentAppointment.time = appointmentValues.where((String element) => element.contains('hora')).first.trim().trimEqualsData();
 
-        if(_currentAppointment.time != null) {
-          if(_currentAppointment.time!.contains('€')) {
-            _currentAppointment.time = (_currentAppointment.time!.substring(0, _currentAppointment.time!.indexOf('€'))).trim();
+        if(currentAppointment.time != null) {
+          if(currentAppointment.time!.contains('€')) {
+            currentAppointment.time = (currentAppointment.time!.substring(0, currentAppointment.time!.indexOf('€'))).trim();
           }
         }
 
-        if (_currentAppointment.time!.length == 1) {
-          _currentAppointment.time = '0${_currentAppointment.time}:00:00';
+        if (currentAppointment.time!.length == 1) {
+          currentAppointment.time = '0${currentAppointment.time}:00:00';
         } else {
-          _currentAppointment.time = '${_currentAppointment.time}:00:00';
+          currentAppointment.time = '${currentAppointment.time}:00:00';
         }
-        user.treatments.last.scheduledAppointments!.add(_currentAppointment);
+        user.treatments.last.scheduledAppointments!.add(currentAppointment);
       }
       await isar.writeTxn(() => isar.treatments.put(user.treatments.last));
       await user.treatments.save();
@@ -423,8 +419,6 @@ class UserRepository {
           'EXTERNAL_Idref_pedidospresup': user.treatments.last.orderId
         }
     );
-    print('Fechas');
-    print(data);
 
     if (data.contains('ERR:') || data.length == 1) {
       if (data.length == 1) {
@@ -438,8 +432,16 @@ class UserRepository {
         'message': data
       };
     } else {
-      List<String> datesAux = data.split('€');
-      String datesString = datesAux[0].substring(0, data.lastIndexOf(","));
+      String datesString = '';
+      if (data.contains('€')) {
+        List<String> datesAux = data.split('€');
+        print(datesAux[1]);
+        datesString = datesAux[0].substring(0, data.lastIndexOf(","));
+      } else {
+        datesString = data.substring(0, data.lastIndexOf(","));
+      }
+
+      //String datesString = datesAux[0].substring(0, data.lastIndexOf(","));
 
       List<DateTime> dates = [];
 

@@ -4,69 +4,10 @@ import 'package:isar/isar.dart';
 import 'package:light_center/BusinessLogic/Cubits/User/user_cubit.dart';
 import 'package:light_center/BusinessLogic/Cubits/Treatment/treatment_cubit.dart';
 import 'package:light_center/Data/Models/Treatment/treatment_model.dart';
-import 'package:light_center/Data/Models/User/user_model.dart';
 import 'package:light_center/Data/Repositories/treatment_repository.dart';
 import 'package:light_center/Data/Repositories/user_repository.dart';
-import 'package:light_center/Services/navigation_service.dart';
 import 'package:light_center/Views/custom_widgets.dart';
 import 'package:light_center/BusinessLogic/Controllers/treatment_selection_controller.dart';
-
-/*class TreatmentSelection extends StatelessWidget {
-  const TreatmentSelection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    UserCubit userCubit = BlocProvider.of<UserCubit>(context);
-    userCubit.getUser();
-
-    return BlocBuilder<UserCubit, UserState>(
-      bloc: userCubit,
-      builder: (context, state) {
-        if (state is UserUpdated || state is UserSaved) {
-          userCubit.getAvailableDates();
-          return updatingScreen(context: context);
-        }
-
-        if (state is UserLoading) {
-          return loadingScreen(context: context);
-        }
-
-        if(state is UserLoaded) {
-          /*if (state.user.treatments!.length == 1) {
-            NavigationService.pushReplacementNamed('home');
-          }*/
-
-          return GridView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 16/9,
-                  mainAxisSpacing: 20,
-                  crossAxisSpacing: 20
-              ),
-              padding: const EdgeInsets.all(8.0),
-              itemCount: state.user.treatments!.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: ListTile(
-                    title: Text(state.user.treatments![index].name!),
-                    subtitle: Text('Citas por agendar: ${state.user.treatments![index].availableAppointments}'),
-                  ),
-                );
-              }
-          );
-        }
-
-        if (state is UserError) {
-          return errorScreen(context: context, errorMessage: state.errorMessage);
-        }
-
-        return invalidStateScreen(context: context);
-      }
-    );
-  }
-}*/
 
 class TreatmentSelectionArguments {
   final Isar isar;
@@ -138,50 +79,5 @@ class TreatmentSelection extends StatelessWidget {
                 return invalidStateScreen(context: context);
               })),
     );
-
-    return BlocBuilder<TreatmentCubit, TreatmentState>(
-        bloc: treatmentCubit,
-        builder: (context, state) {
-          if (state is TreatmentUpdated || state is TreatmentSaved) {
-            treatmentCubit.getTreatments();
-            return updatingScreen(context: context);
-          }
-
-          if (state is TreatmentLoading) {
-            return loadingScreen(context: context);
-          }
-
-          if (state is TreatmentsLoaded) {
-            /*if (state.user.treatments!.length == 1) {
-            NavigationService.pushReplacementNamed('home');
-          }*/
-            return GridView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 16 / 9,
-                    mainAxisSpacing: 20,
-                    crossAxisSpacing: 20),
-                padding: const EdgeInsets.all(8.0),
-                itemCount: state.treatmentsList.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: ListTile(
-                      title: Text(state.treatmentsList[index].name!),
-                      subtitle: Text(
-                          'Citas por agendar: ${state.treatmentsList[index].availableAppointments}'),
-                    ),
-                  );
-                });
-          }
-
-          if (state is TreatmentError) {
-            return errorScreen(
-                context: context, errorMessage: state.errorMessage);
-          }
-
-          return invalidStateScreen(context: context);
-        });
   }
 }

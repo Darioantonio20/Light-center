@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:light_center/Data/Models/Location/location_model.dart';
 import 'package:light_center/Data/Repositories/location_repository.dart';
 
