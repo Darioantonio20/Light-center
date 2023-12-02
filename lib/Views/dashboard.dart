@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:light_center/BusinessLogic/Cubits/User/user_cubit.dart';
 import 'package:light_center/Services/navigation_service.dart';
 import 'package:light_center/Views/custom_widgets.dart';
+import 'package:light_center/Views/my_payments.dart';
 import 'package:light_center/colors.dart';
-import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:light_center/extensions.dart';
 
 class Dashboard extends StatelessWidget {
@@ -20,8 +19,8 @@ class Dashboard extends StatelessWidget {
     return Scaffold(
       appBar: commonAppBar(),
       drawer: commonDrawer(),
-      floatingActionButtonLocation: ExpandableFab.location,
-      floatingActionButton: ExpandableFab(
+      //floatingActionButtonLocation: ExpandableFab.location,
+      /*floatingActionButton: ExpandableFab(
           distance: 130,
           overlayStyle: ExpandableFabOverlayStyle(
               blur: 10
@@ -63,7 +62,7 @@ class Dashboard extends StatelessWidget {
               child: Icon(Icons.phone, color: LightCenterColors.mainPurple, size: 50),
             ),
           ]
-      ),
+      ),*/
       body: BlocBuilder<UserCubit, UserState>(builder: (context, state) {
         if (state is UserUpdated || state is UserSaved) {
           userCubit.getUser();
@@ -81,7 +80,7 @@ class Dashboard extends StatelessWidget {
             child: Column(
               children: [
                 Visibility(
-                  visible: state.user.treatments.last.scheduledAppointments!.isNotEmpty,
+                  visible: state.user.treatments.isNotEmpty && state.user.treatments.last.scheduledAppointments != null && state.user.treatments.last.scheduledAppointments!.isNotEmpty,
                     child: Container(
                         decoration: BoxDecoration(
                           color: LightCenterColors.mainPurple.withOpacity(0.9),
@@ -109,11 +108,16 @@ class Dashboard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const CircleAvatar(
+                          /*const CircleAvatar(
                             minRadius: 40,
                             child: Icon(Icons.person,
                               size: 50,
                             ),
+                          ),*/
+
+                          CircleAvatar(
+                            minRadius: MediaQuery.of(context).size.width * 0.1,
+                            child: Image.asset("assets/images/icon-512.png", width: MediaQuery.of(context).size.width * 0.2),
                           ),
 
                           Text(state.user.name!.toPascalCase(),
@@ -133,87 +137,83 @@ class Dashboard extends StatelessWidget {
                   ),
                 ),
 
-                GridView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 4/3,
-                      mainAxisSpacing: 20,
-                      crossAxisSpacing: 20,
+                Padding(
+                  padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).size.height * 0.02,
+                      left: MediaQuery.of(context).size.width * 0.02,
+                      right: MediaQuery.of(context).size.width * 0.02
                   ),
-                  children: [
-                    GestureDetector(
-                      onTap: () => NavigationService.pushNamed(NavigationService.homeScreen),
-                      child: Card(
-                        color: const Color.fromRGBO(119, 61, 190, 1),
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.4,
-                          height: MediaQuery.of(context).size.height * 0.15,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(35.0),
-                            image: const DecorationImage(image: AssetImage("assets/images/mis_citas.png"), fit: BoxFit.fill)
-                          ),
-                        ),
-                      ),
+                  child: GridView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 4/3,
+                        mainAxisSpacing: 20,
+                        crossAxisSpacing: 10,
                     ),
-
-                    GestureDetector(
-                      onTap: () => NavigationService.showSnackBar(message: 'No implementado'),
-                      child: Card(
-                        color: const Color.fromRGBO(32, 203, 212, 1),
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.4,
-                          height: MediaQuery.of(context).size.height * 0.15,
-                          decoration: BoxDecoration(
+                    children: [
+                      GestureDetector(
+                        onTap: () => NavigationService.pushNamed(NavigationService.homeScreen),
+                        child: Card(
+                          color: const Color.fromRGBO(119, 61, 190, 1),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.4,
+                            height: MediaQuery.of(context).size.height * 0.15,
+                            decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(35.0),
-                              image: const DecorationImage(image: AssetImage("assets/images/mis_pagos.png"), fit: BoxFit.fill)
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    GestureDetector(
-                      onTap: () => NavigationService.pushNamed(NavigationService.news),
-                      child: Card(
-                        color: const Color.fromRGBO(224, 23, 131, 1),
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.4,
-                          height: MediaQuery.of(context).size.height * 0.15,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(35.0),
-                              image: const DecorationImage(image: AssetImage("assets/images/promociones.png"), fit: BoxFit.fill)
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    GestureDetector(
-                      onTap: () => NavigationService.pushNamed(NavigationService.nutritionalOrientation),
-                      child: const Card(
-                        color: Colors.green,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.restaurant,
-                              size: 40,
-                              color: Colors.white,
+                              image: const DecorationImage(image: AssetImage("assets/images/mis_citas.png"), fit: BoxFit.fill)
                             ),
-                            Flexible(
-                              child: Text('Orientación\nNutricional',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold
-                                ),
-                              ),
-                            )
-                          ],
+                          ),
                         ),
                       ),
-                    )
-                  ],
+
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => Payments(user: state.user))),
+                        child: Card(
+                          color: const Color.fromRGBO(97, 39, 159, 1),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.4,
+                            height: MediaQuery.of(context).size.height * 0.15,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(35.0),
+                                image: const DecorationImage(image: AssetImage("assets/images/mis_pagos.jpg"), fit: BoxFit.fill)
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () => NavigationService.pushNamed(NavigationService.news),
+                        child: Card(
+                          color: const Color.fromRGBO(224, 23, 131, 1),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.4,
+                            height: MediaQuery.of(context).size.height * 0.15,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(35.0),
+                                image: const DecorationImage(image: AssetImage("assets/images/promociones.png"), fit: BoxFit.fill)
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () => NavigationService.openLoyalty(),
+                        child: Card(
+                          color: const Color.fromRGBO(195, 167, 226, 1),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.4,
+                            height: MediaQuery.of(context).size.height * 0.15,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(35.0),
+                                image: const DecorationImage(image: AssetImage("assets/images/programa_lealtad.jpg"), fit: BoxFit.fill)
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

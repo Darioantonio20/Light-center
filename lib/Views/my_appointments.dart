@@ -30,7 +30,7 @@ class MyAppointments extends StatelessWidget {
       if (state is UserLoaded) {
         state.user.treatments.last.scheduledAppointments ??= [];
         if (state.user.treatments.last.scheduledAppointments!.isEmpty) {
-          return Center(
+          currentScreen = Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -49,56 +49,56 @@ class MyAppointments extends StatelessWidget {
               ],
             ),
           );
+        } else {
+          currentScreen = ListView.separated(
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
+            itemCount:
+            state.user.treatments.last.scheduledAppointments?.length ?? 0,
+            itemBuilder: (BuildContext context, int index) {
+              if (index == 0) {
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20, bottom: 20),
+                      child: Text('Citas agendadas',
+                          style: TextStyle(
+                              color: LightCenterColors.mainBrown,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20)),
+                    ),
+                    ListTile(
+                        title: Text(state.user.treatments.last
+                            .scheduledAppointments![index].jiffyDateTime ??
+                            'Error al transformar la fecha'),
+                        trailing: FilledButton(
+                            style: FilledButton.styleFrom(
+                                backgroundColor: Colors.red),
+                            onPressed: () => cancelAppointment(
+                                context: context,
+                                appointment: state.user.treatments.last
+                                    .scheduledAppointments![index]),
+                            child: const Text('Cancelar')))
+                  ],
+                );
+              }
+
+              return ListTile(
+                  title: Text(state.user.treatments.last
+                      .scheduledAppointments![index].jiffyDateTime!),
+                  trailing: FilledButton(
+                      style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                      onPressed: () => cancelAppointment(
+                          context: context,
+                          appointment: state.user.treatments.last
+                              .scheduledAppointments![index]),
+                      child: const Text('Cancelar')));
+            },
+            separatorBuilder: (BuildContext context, int index) {
+              return const Divider();
+            },
+          );
         }
-
-        return ListView.separated(
-          shrinkWrap: true,
-          physics: const ClampingScrollPhysics(),
-          itemCount:
-              state.user.treatments.last.scheduledAppointments?.length ?? 0,
-          itemBuilder: (BuildContext context, int index) {
-            if (index == 0) {
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20, bottom: 20),
-                    child: Text('Citas agendadas',
-                        style: TextStyle(
-                            color: LightCenterColors.mainBrown,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20)),
-                  ),
-                  ListTile(
-                      title: Text(state.user.treatments.last
-                              .scheduledAppointments![index].jiffyDateTime ??
-                          'Error al transformar la fecha'),
-                      trailing: FilledButton(
-                          style: FilledButton.styleFrom(
-                              backgroundColor: Colors.red),
-                          onPressed: () => cancelAppointment(
-                              context: context,
-                              appointment: state.user.treatments.last
-                                  .scheduledAppointments![index]),
-                          child: const Text('Cancelar')))
-                ],
-              );
-            }
-
-            return ListTile(
-                title: Text(state.user.treatments.last
-                    .scheduledAppointments![index].jiffyDateTime!),
-                trailing: FilledButton(
-                    style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                    onPressed: () => cancelAppointment(
-                        context: context,
-                        appointment: state.user.treatments.last
-                            .scheduledAppointments![index]),
-                    child: const Text('Cancelar')));
-          },
-          separatorBuilder: (BuildContext context, int index) {
-            return const Divider();
-          },
-        );
       }
 
       if (state is UserError) {

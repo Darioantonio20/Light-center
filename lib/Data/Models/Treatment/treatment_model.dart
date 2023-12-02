@@ -13,6 +13,7 @@ class Treatment {
   int? availableAppointments;
   int? appointmentsPerWeek;
   List<Appointment>? scheduledAppointments;
+  List<DateRange>? dateRanges;
   List<DateTime>? availableDates;
   DateTime? firstDateToSchedule;
   DateTime? lastDateToSchedule;
@@ -29,14 +30,26 @@ class Appointment {
 
   Appointment({this.id, this.date, this.time});
 
-  @override
-  String toString() {
-    return 'ID: $id\nDate: $date\nTime: $time';
-    //return super.toString();
-  }
-
   DateTime? get dateTime => date != null && time != null ? Jiffy.parse('${date!} ${time!}', pattern: 'dd/MM/yyyy h:mm:ss').dateTime : null;
   String? get jiffyDate => date != null ? Jiffy.parse(date!, pattern: 'dd/MM/yyyy').yMMMMEEEEd : null;
   String? get jiffyTime => time != null ? Jiffy.parse(time!, pattern: 'h:mm:ss').jms : null;
   String? get jiffyDateTime => date != null && time != null ? Jiffy.parse('${date!} ${time!}', pattern: 'dd/MM/yyyy h:mm:ss').yMMMMEEEEdjm : null;
+}
+
+@embedded
+class DateRange {
+  DateTime? initialDate;
+  DateTime? endDate;
+  int? availableSchedules;
+
+  DateRange({this.initialDate, this.endDate, this.availableSchedules});
+
+  @override
+  String toString() {
+    if (initialDate != null && endDate != null && availableSchedules != null) {
+      return 'Tienes $availableSchedules cita(s) disponible(s) entre el día ${Jiffy.parseFromDateTime(initialDate!).yMMMMEEEEd} y el día ${Jiffy.parseFromDateTime(endDate!).yMMMMEEEEd}';
+    } else {
+      return '';
+    }
+  }
 }

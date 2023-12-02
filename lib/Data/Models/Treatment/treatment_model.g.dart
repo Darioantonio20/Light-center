@@ -32,33 +32,39 @@ const TreatmentSchema = CollectionSchema(
       name: r'availableDates',
       type: IsarType.dateTimeList,
     ),
-    r'firstDateToSchedule': PropertySchema(
+    r'dateRanges': PropertySchema(
       id: 3,
+      name: r'dateRanges',
+      type: IsarType.objectList,
+      target: r'DateRange',
+    ),
+    r'firstDateToSchedule': PropertySchema(
+      id: 4,
       name: r'firstDateToSchedule',
       type: IsarType.dateTime,
     ),
     r'lastDateToSchedule': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'lastDateToSchedule',
       type: IsarType.dateTime,
     ),
     r'name': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'name',
       type: IsarType.string,
     ),
     r'orderId': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'orderId',
       type: IsarType.long,
     ),
     r'productId': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'productId',
       type: IsarType.long,
     ),
     r'scheduledAppointments': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'scheduledAppointments',
       type: IsarType.objectList,
       target: r'Appointment',
@@ -79,7 +85,10 @@ const TreatmentSchema = CollectionSchema(
       linkName: r'treatments',
     )
   },
-  embeddedSchemas: {r'Appointment': AppointmentSchema},
+  embeddedSchemas: {
+    r'Appointment': AppointmentSchema,
+    r'DateRange': DateRangeSchema
+  },
   getId: _treatmentGetId,
   getLinks: _treatmentGetLinks,
   attach: _treatmentAttach,
@@ -96,6 +105,20 @@ int _treatmentEstimateSize(
     final value = object.availableDates;
     if (value != null) {
       bytesCount += 3 + value.length * 8;
+    }
+  }
+  {
+    final list = object.dateRanges;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        final offsets = allOffsets[DateRange]!;
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount +=
+              DateRangeSchema.estimateSize(value, offsets, allOffsets);
+        }
+      }
     }
   }
   {
@@ -130,13 +153,19 @@ void _treatmentSerialize(
   writer.writeLong(offsets[0], object.appointmentsPerWeek);
   writer.writeLong(offsets[1], object.availableAppointments);
   writer.writeDateTimeList(offsets[2], object.availableDates);
-  writer.writeDateTime(offsets[3], object.firstDateToSchedule);
-  writer.writeDateTime(offsets[4], object.lastDateToSchedule);
-  writer.writeString(offsets[5], object.name);
-  writer.writeLong(offsets[6], object.orderId);
-  writer.writeLong(offsets[7], object.productId);
+  writer.writeObjectList<DateRange>(
+    offsets[3],
+    allOffsets,
+    DateRangeSchema.serialize,
+    object.dateRanges,
+  );
+  writer.writeDateTime(offsets[4], object.firstDateToSchedule);
+  writer.writeDateTime(offsets[5], object.lastDateToSchedule);
+  writer.writeString(offsets[6], object.name);
+  writer.writeLong(offsets[7], object.orderId);
+  writer.writeLong(offsets[8], object.productId);
   writer.writeObjectList<Appointment>(
-    offsets[8],
+    offsets[9],
     allOffsets,
     AppointmentSchema.serialize,
     object.scheduledAppointments,
@@ -153,14 +182,20 @@ Treatment _treatmentDeserialize(
   object.appointmentsPerWeek = reader.readLongOrNull(offsets[0]);
   object.availableAppointments = reader.readLongOrNull(offsets[1]);
   object.availableDates = reader.readDateTimeList(offsets[2]);
-  object.firstDateToSchedule = reader.readDateTimeOrNull(offsets[3]);
+  object.dateRanges = reader.readObjectList<DateRange>(
+    offsets[3],
+    DateRangeSchema.deserialize,
+    allOffsets,
+    DateRange(),
+  );
+  object.firstDateToSchedule = reader.readDateTimeOrNull(offsets[4]);
   object.id = id;
-  object.lastDateToSchedule = reader.readDateTimeOrNull(offsets[4]);
-  object.name = reader.readStringOrNull(offsets[5]);
-  object.orderId = reader.readLongOrNull(offsets[6]);
-  object.productId = reader.readLongOrNull(offsets[7]);
+  object.lastDateToSchedule = reader.readDateTimeOrNull(offsets[5]);
+  object.name = reader.readStringOrNull(offsets[6]);
+  object.orderId = reader.readLongOrNull(offsets[7]);
+  object.productId = reader.readLongOrNull(offsets[8]);
   object.scheduledAppointments = reader.readObjectList<Appointment>(
-    offsets[8],
+    offsets[9],
     AppointmentSchema.deserialize,
     allOffsets,
     Appointment(),
@@ -182,16 +217,23 @@ P _treatmentDeserializeProp<P>(
     case 2:
       return (reader.readDateTimeList(offset)) as P;
     case 3:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readObjectList<DateRange>(
+        offset,
+        DateRangeSchema.deserialize,
+        allOffsets,
+        DateRange(),
+      )) as P;
     case 4:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 5:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 6:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 7:
       return (reader.readLongOrNull(offset)) as P;
     case 8:
+      return (reader.readLongOrNull(offset)) as P;
+    case 9:
       return (reader.readObjectList<Appointment>(
         offset,
         AppointmentSchema.deserialize,
@@ -598,6 +640,112 @@ extension TreatmentQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'availableDates',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition> dateRangesIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'dateRanges',
+      ));
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      dateRangesIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'dateRanges',
+      ));
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      dateRangesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'dateRanges',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      dateRangesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'dateRanges',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      dateRangesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'dateRanges',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      dateRangesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'dateRanges',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      dateRangesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'dateRanges',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
+      dateRangesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'dateRanges',
         lower,
         includeLower,
         upper,
@@ -1203,6 +1351,13 @@ extension TreatmentQueryFilter
 
 extension TreatmentQueryObject
     on QueryBuilder<Treatment, Treatment, QFilterCondition> {
+  QueryBuilder<Treatment, Treatment, QAfterFilterCondition> dateRangesElement(
+      FilterQuery<DateRange> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'dateRanges');
+    });
+  }
+
   QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
       scheduledAppointmentsElement(FilterQuery<Appointment> q) {
     return QueryBuilder.apply(this, (query) {
@@ -1503,6 +1658,13 @@ extension TreatmentQueryProperty
       availableDatesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'availableDates');
+    });
+  }
+
+  QueryBuilder<Treatment, List<DateRange>?, QQueryOperations>
+      dateRangesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'dateRanges');
     });
   }
 
@@ -2598,3 +2760,305 @@ extension AppointmentQueryFilter
 
 extension AppointmentQueryObject
     on QueryBuilder<Appointment, Appointment, QFilterCondition> {}
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
+const DateRangeSchema = Schema(
+  name: r'DateRange',
+  id: 5614220809524369567,
+  properties: {
+    r'availableSchedules': PropertySchema(
+      id: 0,
+      name: r'availableSchedules',
+      type: IsarType.long,
+    ),
+    r'endDate': PropertySchema(
+      id: 1,
+      name: r'endDate',
+      type: IsarType.dateTime,
+    ),
+    r'initialDate': PropertySchema(
+      id: 2,
+      name: r'initialDate',
+      type: IsarType.dateTime,
+    )
+  },
+  estimateSize: _dateRangeEstimateSize,
+  serialize: _dateRangeSerialize,
+  deserialize: _dateRangeDeserialize,
+  deserializeProp: _dateRangeDeserializeProp,
+);
+
+int _dateRangeEstimateSize(
+  DateRange object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  return bytesCount;
+}
+
+void _dateRangeSerialize(
+  DateRange object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeLong(offsets[0], object.availableSchedules);
+  writer.writeDateTime(offsets[1], object.endDate);
+  writer.writeDateTime(offsets[2], object.initialDate);
+}
+
+DateRange _dateRangeDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = DateRange(
+    availableSchedules: reader.readLongOrNull(offsets[0]),
+    endDate: reader.readDateTimeOrNull(offsets[1]),
+    initialDate: reader.readDateTimeOrNull(offsets[2]),
+  );
+  return object;
+}
+
+P _dateRangeDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readLongOrNull(offset)) as P;
+    case 1:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 2:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+extension DateRangeQueryFilter
+    on QueryBuilder<DateRange, DateRange, QFilterCondition> {
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition>
+      availableSchedulesIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'availableSchedules',
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition>
+      availableSchedulesIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'availableSchedules',
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition>
+      availableSchedulesEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'availableSchedules',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition>
+      availableSchedulesGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'availableSchedules',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition>
+      availableSchedulesLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'availableSchedules',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition>
+      availableSchedulesBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'availableSchedules',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition> endDateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'endDate',
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition> endDateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'endDate',
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition> endDateEqualTo(
+      DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'endDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition> endDateGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'endDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition> endDateLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'endDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition> endDateBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'endDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition>
+      initialDateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'initialDate',
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition>
+      initialDateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'initialDate',
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition> initialDateEqualTo(
+      DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'initialDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition>
+      initialDateGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'initialDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition> initialDateLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'initialDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DateRange, DateRange, QAfterFilterCondition> initialDateBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'initialDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+}
+
+extension DateRangeQueryObject
+    on QueryBuilder<DateRange, DateRange, QFilterCondition> {}

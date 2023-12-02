@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:light_center/BusinessLogic/Cubits/Home/home_cubit.dart';
@@ -12,8 +11,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
     List<Widget> widgetOptions = <Widget>[
       const Schedule(),
       const MyAppointments(),
@@ -22,16 +19,17 @@ class HomePage extends StatelessWidget {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         return Scaffold(
-          key: _scaffoldKey,
           appBar: commonAppBar(
-            actions: [
-              IconButton(
-                  onPressed: () => _scaffoldKey.currentState!.openEndDrawer(),
-                  icon: const Icon(Icons.menu))
-            ]
+              actions: [
+                IconButton(
+                    onPressed: () => NavigationService.showSimpleErrorAlertDialog(
+                      title: '¿Cómo funciona?',
+                      content: 'Toque una fecha en el calendario y espere un momento, se presentará un menú con las horas disponibles.\n\nPara agendar un horario, presione la hora en que desea asistir al SPA, la aplicación le notificará si se pudo agendar o si ocurrió un error.',
+                    ),
+                    icon: const Icon(Icons.help))
+              ]
           ),
           body: widgetOptions.elementAt(state.currentIndex),
-          endDrawer: commonDrawer(),
           bottomNavigationBar: BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(

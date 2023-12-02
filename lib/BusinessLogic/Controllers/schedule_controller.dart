@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:light_center/colors.dart';
 import 'package:jiffy/jiffy.dart';
 
-List<Event> eventsList = [];
+List<Appointment> eventsList = [];
 
 late UserCubit userCubit;
 Map<DateTime, List> events = {};
@@ -20,7 +20,7 @@ late ValueNotifier<DateTime> focusedDay;
 List<DateTime> availableDates = [];
 late bool scheduled;
 
-void showModal({required BuildContext context, required List<Event> events, required List<String> schedule, required User user}) {
+void showModal({required BuildContext context, required List<Appointment> events, required List<String> schedule, required User user}) {
   showModalBottomSheet<void>(
     context: context,
     isDismissible: false,
@@ -32,7 +32,7 @@ void showModal({required BuildContext context, required List<Event> events, requ
   );
 }
 
-List<Event> getEventsForDay() {
+List<Appointment> getEventsForDay() {
   return eventsList.where((event) => DateUtils.isSameDay(event.dateTime, selectedDay.value)).toList();
 }
 
@@ -84,7 +84,7 @@ Future<void> scheduleAppointment({required BuildContext context, required DateTi
     DateTime appointmentAsDT = appointment.dateTime!;
 
     if (DateUtils.isSameDay(appointmentAsDT, day)) {
-      showDialog(
+      await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
           title: const Text('Seleccione otra fecha'),
@@ -112,7 +112,7 @@ Future<void> scheduleAppointment({required BuildContext context, required DateTi
   if (appointmentsInWeek < (user.treatments.last.appointmentsPerWeek ?? 1)) {
     await showDialog(
       barrierDismissible: false,
-      context: context,
+      context: NavigationService.context(),
       builder: (BuildContext context) => AlertDialog(
         title: const Text('¿Agendar cita?'),
         content: Text('¿Deseas la cita para el ${DateFormat.yMMMMd('es-MX').format(day)} a la(s) ${DateFormat.jm().format(day)}?'),
@@ -155,7 +155,7 @@ Future<void> scheduleAppointment({required BuildContext context, required DateTi
                   ),
                   actions: <Widget>[
                     TextButton(
-                      onPressed: () => NavigationService.pop(),
+                      onPressed: () => Navigator.of(context).pop(),
                       child: Text('Cerrar',
                         style: TextStyle(
                             color: LightCenterColors.mainPurple
@@ -180,7 +180,7 @@ Future<void> scheduleAppointment({required BuildContext context, required DateTi
     );
   } else {
     showDialog(
-      context: context,
+      context: NavigationService.context(),
       builder: (BuildContext context) => AlertDialog(
         title: const Text('Límite alcanzado'),
         content: Text('Ya tienes agendadas $appointmentsInWeek citas en esta semana, el límite por semana es de ${user.treatments.last.appointmentsPerWeek}'),

@@ -5,13 +5,21 @@ import 'package:light_center/Views/custom_widgets.dart';
 
 class PDFScreen extends StatelessWidget {
   final String pdfName;
-  const PDFScreen({super.key, required this.pdfName});
+  final bool isURL;
+  const PDFScreen({super.key, required this.pdfName, this.isURL = false});
 
   @override
   Widget build(BuildContext context) {
+    String onlineName = pdfName;
+    if (isURL) {
+      onlineName = onlineName.substring(0, onlineName.indexOf('.pdf'));
+      onlineName = onlineName.substring(onlineName.lastIndexOf('/') + 1);
+      onlineName = onlineName.replaceAll("%20", " ");
+    }
+
     return Scaffold(
         appBar: commonAppBar(
-            title: Text(pdfName),
+            title: isURL ? Text(onlineName) : Text(pdfName),
             actions: [
               IconButton(
                   onPressed: () => NavigationService.showSimpleErrorAlertDialog(
@@ -22,7 +30,7 @@ class PDFScreen extends StatelessWidget {
             ]
         ),
         body: FutureBuilder<PDFDocument>(
-          future: PDFDocument.fromAsset('assets/documents/$pdfName.pdf'),
+          future: isURL ? PDFDocument.fromURL(pdfName) : PDFDocument.fromAsset('assets/documents/$pdfName.pdf'),
           builder: (BuildContext context, AsyncSnapshot<PDFDocument> snapshot) {
             if (snapshot.hasData) {
               return PDFViewer(

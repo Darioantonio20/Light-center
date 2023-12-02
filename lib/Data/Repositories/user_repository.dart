@@ -1,9 +1,6 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:jiffy/jiffy.dart';
-import 'package:light_center/BusinessLogic/Cubits/Treatment/treatment_cubit.dart';
 import 'package:light_center/Data/Models/Treatment/treatment_model.dart';
 import 'package:light_center/Data/Models/User/user_model.dart';
-import 'package:light_center/Services/navigation_service.dart';
 import 'package:light_center/Services/network_service.dart';
 import 'package:light_center/enums.dart';
 import 'package:isar/isar.dart';
@@ -104,12 +101,6 @@ class UserRepository {
     return await updateUser(user);
   }
 
-  /*Future<bool> updateCurrentTreatment(String newTreatment) async {
-    User user = await getUser() ?? User();
-    user.currentTreatment = newTreatment;
-    return await updateUser(user);
-  }*/
-
   Future<bool> removeWhatsappNumber() async {
     User? user = await getUser();
     if(user != null) {
@@ -130,51 +121,6 @@ class UserRepository {
     return false;
   }
 
-  /*void updateTreatment({required int treatmentID}) async {
-    User? user = await getUser();
-    user!.treatments!.where((treatment) => treatment.id == treatmentID).first;
-  }*/
-
-  /*Future<int> findTreatment({required int treatmentID}) async {
-    User? user = await getUser();
-    if (user == null) {
-      return -1;
-    }
-  }*/
-
-  Future<List<DateTime>> getAvailableDates({required User user}) async {
-    await user.treatments.load();
-
-    String data = await sendSOAPRequest(
-        soapAction: 'http://tempuri.org/SPA_FECHASDISPONIBLES',
-        envelopeName: 'SPA_FECHASDISPONIBLES',
-        content: {
-          'DSNDataBase': user.location.value!.code,
-          'NoWhatsAPP': '521${user.whatsappNumber}',
-          'EXTERNAL_Idref_pedidospresup': user.treatments.last.orderId
-        }
-    );
-    if (data.contains("ERR:")) {
-      return [];
-    }
-
-    List<String> datesAux = data.split('€');
-    String datesString = datesAux[0].substring(0, data.lastIndexOf(","));
-
-    List<DateTime> dates = [];
-
-    for (String date in datesString.split(",")) {
-      try {
-        dates.add(Jiffy.parse(date.trim(), pattern: 'dd/MM/yyyy').dateTime);
-      } catch(e) {
-        return [];
-      }
-    }
-
-    dates.sort((a,b) => a.compareTo(b));
-    return dates;
-  }
-
   Future<Map<String, dynamic>> scheduleAppointment({required User user, required DateTime day}) async {
     String data = await sendSOAPRequest(
         soapAction: 'http://tempuri.org/SPA_RESERVACITAEJECUCION',
@@ -188,7 +134,7 @@ class UserRepository {
         }
     );
 
-    if (data.contains('ERR:')) {
+    if (data.contains('ERR:') || data.length <= 1) {
       if (data.length == 1) {
         data = 'La cita no pudo ser agendada.';
       } else {
@@ -237,7 +183,7 @@ class UserRepository {
         }
     );
 
-    if (data.contains('ERR:') || data.length == 1) {
+    if (data.contains('ERR:') || data.length <= 1) {
       if (data.length == 1) {
         data = 'La cita no pudo ser cancelada.';
       } else {
@@ -275,7 +221,10 @@ class UserRepository {
 
   Future<Map<String, dynamic>> fetchUser({required User user}) async {
     //Check when multiple treatments are defined
-    //await isar.treatments.clear();
+    await isar.writeTxn(() async {
+      await isar.treatments.clear();
+    });
+
     String data = await sendSOAPRequest(
         soapAction: 'http://tempuri.org/SPA_VALIDAPACIENTE',
         envelopeName: 'SPA_VALIDAPACIENTE',
@@ -285,7 +234,7 @@ class UserRepository {
           'CodVerificador': user.code,
         });
 
-    if (data.contains('ERR:') || data.length == 1) {
+    if (data.contains('ERR:') || data.length <= 1) {
       if (data.length == 1) {
         data = 'No cuenta con ningún paquete, favor de comunicarse con la clínica para realizar la adquisición de un tratamiento.';
       } else {
@@ -298,44 +247,67 @@ class UserRepository {
       };
     } else {
       data = data.substring(data.indexOf("€") + 1);
-      List<String> datosPaciente = data.split(",");
+      List<String> patientData = data.split(",");
 
       late Treatment currentTreatment;
-      TreatmentCubit treatmentCubit = BlocProvider.of<TreatmentCubit>(NavigationService.context());
 
       try {
-        user.name = datosPaciente.where((String element) => element.contains('nombrepaciente')).first.trimEqualsData();
+        user.name = patientData.where((String element) => element.contains('nombrepaciente')).first.trimEqualsData();
         List<Treatment> userTreatments = await user.treatments.filter().findAll();
 
         // Checks if there's more than one treatment in response (NEED TO ADD), right now I'm just checking the current DB
         if (userTreatments.isEmpty) {
           currentTreatment = Treatment();
-          currentTreatment.name = datosPaciente.where((String element) => element.contains('descrippaquetecorporal')).first.trimEqualsData();
-          currentTreatment.orderId = int.parse(datosPaciente.where((String element) => element.contains('idpedido')).first.trimEqualsData());
-          currentTreatment.productId = int.parse(datosPaciente.where((String element) => element.contains('idpaquete')).first.trimEqualsData());
+          currentTreatment.name = patientData.where((String element) => element.contains('descrippaquetecorporal')).first.trimEqualsData();
+          currentTreatment.orderId = int.parse(patientData.where((String element) => element.contains('idpedido')).first.trimEqualsData());
+          currentTreatment.productId = int.parse(patientData.where((String element) => element.contains('idpaquete')).first.trimEqualsData());
 
-          if (!datosPaciente.where((String element) => element.contains('fproxcitaclinica')).first.trimEqualsData().contains('nodisponible')) {
-            currentTreatment.scheduledAppointments = [Appointment(
-                date: datosPaciente.where((String element) => element.contains('fproxcitaclinica')).first.trimEqualsData(),
-                time: datosPaciente.where((String element) => element.contains('fproxcitaclinicahora')).first.trimEqualsData()
-            )];
+          if (!patientData.where((String element) => element.contains('vigenciapaquete')).first.trimEqualsData().contains('nodisponible')) {
+            currentTreatment.lastDateToSchedule = parseDateTimeFromResponse(patientData.where((String element) => element.contains('vigenciapaquete')).first.trimEqualsData());
+          }
+
+          if (!patientData.where((String element) => element.contains('fproxcitaclinica')).first.trimEqualsData().contains('nodisponible')) {
+            currentTreatment.scheduledAppointments =
+            [
+              appointmentFromLogin(
+                  date: patientData.where((String element) => element.contains('fproxcitaclinica')).first.trimEqualsData(),
+                  time: patientData.where((String element) => element.contains('fproxcitaclinicahora')).first.trimEqualsData())
+            ];
           } else {
             currentTreatment.scheduledAppointments = [];
           }
 
-          await treatmentCubit.updateTreatment(currentTreatment);
-          user.treatments.add(await treatmentCubit.getTreatmentByOrderId(currentTreatment.orderId!) ?? currentTreatment);
+          await isar.writeTxn(() async {
+            await isar.treatments.put(currentTreatment);
+          });
+
+          user.treatments.add(currentTreatment);
         } else {
           for (Treatment userTreatment in userTreatments) {
             currentTreatment = await user.treatments.filter().orderIdEqualTo(userTreatment.orderId).findFirst() ?? Treatment();
-            currentTreatment.name = datosPaciente.where((String element) => element.contains('descrippaquetecorporal')).first.trimEqualsData();
-            currentTreatment.orderId = int.parse(datosPaciente.where((String element) => element.contains('idpedido')).first.trimEqualsData());
-            currentTreatment.productId = int.parse(datosPaciente.where((String element) => element.contains('idpaquete')).first.trimEqualsData());
+            currentTreatment.name = patientData.where((String element) => element.contains('descrippaquetecorporal')).first.trimEqualsData();
+            currentTreatment.orderId = int.parse(patientData.where((String element) => element.contains('idpedido')).first.trimEqualsData());
+            currentTreatment.productId = int.parse(patientData.where((String element) => element.contains('idpaquete')).first.trimEqualsData());
 
-            if (!datosPaciente.where((String element) => element.contains('vigenciapaquete')).first.trimEqualsData().contains('nodisponible')) {
-              currentTreatment.lastDateToSchedule = parseDateTimeFromResponse(datosPaciente.where((String element) => element.contains('vigenciapaquete')).first.trimEqualsData());
+            if (!patientData.where((String element) => element.contains('vigenciapaquete')).first.trimEqualsData().contains('nodisponible')) {
+              currentTreatment.lastDateToSchedule = parseDateTimeFromResponse(patientData.where((String element) => element.contains('vigenciapaquete')).first.trimEqualsData());
             }
-            user.treatments.add(await treatmentCubit.getTreatmentByOrderId(currentTreatment.orderId!) ?? currentTreatment);
+
+            if (!patientData.where((String element) => element.contains('fproxcitaclinica')).first.trimEqualsData().contains('nodisponible')) {
+              currentTreatment.scheduledAppointments =
+              [
+                appointmentFromLogin(
+                    date: patientData.where((String element) => element.contains('fproxcitaclinica')).first.trimEqualsData(),
+                    time: patientData.where((String element) => element.contains('fproxcitaclinicahora')).first.trimEqualsData())
+              ];
+            } else {
+              currentTreatment.scheduledAppointments = [];
+            }
+
+            await isar.writeTxn(() async {
+              await isar.treatments.put(currentTreatment);
+            });
+
             user.treatments.add(currentTreatment);
           }
         }
@@ -364,7 +336,7 @@ class UserRepository {
         }
     );
 
-    if (data.contains('ERR:') || data.length == 1) {
+    if (data.contains('ERR:') || data.length <= 1) {
       if (data.length == 1) {
         data = 'No cuenta con ninguna cita agendada.';
       } else {
@@ -420,7 +392,7 @@ class UserRepository {
         }
     );
 
-    if (data.contains('ERR:') || data.length == 1) {
+    if (data.contains('ERR:') || data.length <= 1) {
       if (data.length == 1) {
         data = 'No cuenta con ninguna fecha disponible.';
       } else {
@@ -433,15 +405,18 @@ class UserRepository {
       };
     } else {
       String datesString = '';
+      String rangesString = '';
       if (data.contains('€')) {
         List<String> datesAux = data.split('€');
-        print(datesAux[1]);
         datesString = datesAux[0].substring(0, data.lastIndexOf(","));
+        if (datesAux[1].contains(',')) {
+          rangesString = datesAux[1].substring(0, data.lastIndexOf(","));
+        } else {
+          rangesString = datesAux[1];
+        }
       } else {
         datesString = data.substring(0, data.lastIndexOf(","));
       }
-
-      //String datesString = datesAux[0].substring(0, data.lastIndexOf(","));
 
       List<DateTime> dates = [];
 
@@ -458,7 +433,21 @@ class UserRepository {
 
       dates.sort((a,b) => a.compareTo(b));
 
+      List<DateRange> dateRanges = [];
+
+      if (rangesString.isNotEmpty) {
+        for (String range in rangesString.split(",")) {
+          dateRanges.add(
+              DateRange(
+                  initialDate: Jiffy.parse(range.substring(0, range.indexOf('-')), pattern: 'dd/MM/yyyy').dateTime,
+                  endDate: Jiffy.parse(range.substring(range.indexOf('-') + 1, range.indexOf('_')), pattern: 'dd/MM/yyyy').dateTime,
+                  availableSchedules: int.parse(range.substring(range.indexOf('_') + 1)))
+          );
+        }
+      }
+
       user.treatments.last.availableDates = dates;
+      user.treatments.last.dateRanges = dateRanges;
       await isar.writeTxn(() => isar.treatments.put(user.treatments.last));
       await user.treatments.save();
 
@@ -479,5 +468,19 @@ class UserRepository {
     } catch (e) {
       return null;
     }
+  }
+
+  Appointment appointmentFromLogin({required String date, required String time}) {
+    String auxTime = time;
+    if (auxTime.length == 1) {
+      auxTime = '0$time';
+    }
+
+    auxTime += ':00:00';
+
+    return Appointment(
+      time: auxTime,
+      date: date
+    );
   }
 }

@@ -17,7 +17,6 @@ class Schedule extends StatelessWidget {
     userCubit = BlocProvider.of<UserCubit>(context);
     userCubit.getAvailableDatesBySOAP();
     Widget? currentScreen;
-    //available2Dates = ValueNotifier<List<DateTime>>([]);
     scheduled = false;
 
     return BlocBuilder<UserCubit, UserState>(builder: (context, state) {
@@ -40,6 +39,7 @@ class Schedule extends StatelessWidget {
         }
 
         availableDates = state.user.treatments.last.availableDates ?? [];
+        eventsList = state.user.treatments.last.scheduledAppointments ?? [];
 
         if (availableDates.isEmpty) {
           return Center(
@@ -75,6 +75,28 @@ class Schedule extends StatelessWidget {
                 ),
               ),
             ),
+
+            Visibility(
+              visible: state.user.treatments.last.dateRanges!.isNotEmpty,
+              child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: state.user.treatments.last.dateRanges!.length,
+                  itemBuilder: (context, index) {
+                    late Color rangeColor;
+                    if (index % 2 == 0) {
+                      rangeColor = LightCenterColors.backgroundPurple;
+                    } else {
+                      rangeColor = LightCenterColors.backgroundPink;
+                    }
+
+                    return Container(
+                      color: rangeColor,
+                      child: Text(state.user.treatments.last.dateRanges![index].toString()),
+                    );
+                  }
+                  ),
+            ),
+
             Padding(
               padding: const EdgeInsets.only(top: 16),
               child: ValueListenableBuilder(
@@ -87,10 +109,11 @@ class Schedule extends StatelessWidget {
                       startingDayOfWeek: StartingDayOfWeek.monday,
                       locale: 'es-MX',
                       enabledDayPredicate: (DateTime date) {
-                        return (availableDates.where((element) => isSameDay(element, date)).isNotEmpty);
+                        return (availableDates.where((element) => isSameDay(element, date)).isNotEmpty || eventsList.where((element) => isSameDay(element.dateTime, date)).isNotEmpty);
                       },
                       eventLoader: (date) {
-                        return state.user.treatments.last.scheduledAppointments!.where((event) => DateUtils.isSameDay(event.dateTime, date)).toList();
+                        //return state.user.treatments.last.scheduledAppointments!.where((event) => DateUtils.isSameDay(event.dateTime, date)).toList();
+                        return eventsList.where((event) => DateUtils.isSameDay(event.dateTime, date)).toList();
                       },
                       selectedDayPredicate: (day) {
                         return isSameDay(selectedDay.value, day);

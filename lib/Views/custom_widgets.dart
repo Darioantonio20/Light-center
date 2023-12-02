@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:light_center/BusinessLogic/Controllers/schedule_controller.dart';
+import 'package:light_center/Data/Models/Treatment/treatment_model.dart';
 import 'package:light_center/Data/Models/User/user_model.dart';
-import 'package:light_center/Data/Models/event_model.dart';
+import 'package:light_center/Services/isar_service.dart';
 import 'package:light_center/Services/navigation_service.dart';
 import 'package:light_center/colors.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -33,13 +34,16 @@ AppBar commonAppBar({
   return AppBar(
     automaticallyImplyLeading: leading == null,
     leading: leading,
-    title: title ?? Image.asset('assets/images/logo_horizontal.png', width: MediaQuery.of(NavigationService.context()).size.width * 0.5),
+    //title: title ?? Image.asset('assets/images/logo_horizontal.png', width: MediaQuery.of(NavigationService.context()).size.width * 0.5),
+    title: title ?? const SizedBox.shrink(),
     flexibleSpace: Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
-            colors: [LightCenterColors.backgroundPink, Colors.white, LightCenterColors.backgroundPurple]),
+            colors: [LightCenterColors.backgroundPink, Colors.white, LightCenterColors.backgroundPurple]
+        ),
+        image: title == null ? const DecorationImage(image: AssetImage("assets/images/logo_vertical2.png")) : null,
       ),
     ),
     backgroundColor: Colors.deepPurpleAccent,
@@ -289,7 +293,7 @@ SizedBox invalidScreen({required BuildContext context}) {
   );
 }
 
-SizedBox eventsModalSheet({required BuildContext context, required DateTime selectedDay, required List<Event> events, required List<String> schedule, required User user}) {
+SizedBox eventsModalSheet({required BuildContext context, required DateTime selectedDay, required List<Appointment> events, required List<String> schedule, required User user}) {
   events = events.where((event) => DateUtils.isSameDay(event.dateTime, selectedDay)).toList();
   return SizedBox(
     height: MediaQuery.of(context).size.height * 0.6,
@@ -401,7 +405,7 @@ GridView getScheduleGrid({required List<dynamic> schedule, required DateTime sel
       itemCount: schedule.length,
       itemBuilder: (context, index) {
         late DateTime currentDateTime;
-        if (schedule.runtimeType == List<Event>) {
+        if (schedule.runtimeType == List<Appointment>) {
           currentDateTime = schedule[index].dateTime;
         } else {
           currentDateTime = DateTime.parse(''
@@ -413,7 +417,7 @@ GridView getScheduleGrid({required List<dynamic> schedule, required DateTime sel
           width: MediaQuery.of(context).size.width * 0.01,
           child: FilledButton(
               onPressed: () async {
-                if(schedule.runtimeType == List<Event>) {
+                if(schedule.runtimeType == List<Appointment>) {
                   manageScheduledAppointment(context: context, scheduledDate: currentDateTime, user: user);
                 } else {
                   await scheduleAppointment(context: context, day: currentDateTime, user: user);
@@ -431,143 +435,130 @@ GridView getScheduleGrid({required List<dynamic> schedule, required DateTime sel
 
 Drawer commonDrawer() {
   return Drawer(
-    child: ListView(
-      shrinkWrap: true,
-      physics: const ClampingScrollPhysics(),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-
-        const Padding(
-          padding: EdgeInsets.only(
-            top: 10,
-            bottom: 10
-          ),
-          child: Center(
-              child: Text('Menú',
-                style:TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold
-                ),
-              )
-          ),
-        ),
-
-        tappableListTileItem(
-            isDisabled: true,
-            icon: Icons.person,
-            title: 'Mi Perfil',
-            action: () {
-              NavigationService.pop();
-              NavigationService.showSnackBar(message: 'No implementado');
-            }
-        ),
-
-        const Divider(),
-
-        tappableListTileItem(
-            icon: Icons.book,
-            title: 'Mis Citas',
-            action: () => NavigationService.popAndPushNamed(NavigationService.homeScreen)
-        ),
-
-        const Divider(),
-
-        tappableListTileItem(
-            isDisabled: true,
-            icon: Icons.attach_money,
-            title: 'Mis Pagos',
-            action: () {
-              NavigationService.pop();
-              NavigationService.showSnackBar(message: 'No implementado');
-            }
-        ),
-
-        const Divider(),
-
-        tappableListTileItem(
-            icon: Icons.local_offer,
-            title: 'Promociones',
-            action: () => NavigationService.popAndPushNamed(NavigationService.news)
-        ),
-
-        const Divider(),
-
-        tappableListTileItem(
-            icon: Icons.restaurant,
-            title: 'Orientación Nutrimental',
-            action: () => NavigationService.popAndPushNamed(NavigationService.nutritionalOrientation)
-        ),
-
-        const Padding(
-          padding: EdgeInsets.only(
-              top: 50,
-              bottom: 20
-          ),
-          child: Center(
-              child: Text('Acuerdos',
-                style:TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold
-                ),
-              )
-          ),
-        ),
-
-        tappableListTileItem(
-            icon: Icons.rule,
-            title: 'Reglamento',
-            action: () => NavigationService.openInternalRegulations()
-        ),
-        
-        tappableListTileItem(
-            icon: Icons.help_center,
-            title: 'Indicaciones',
-            action: () => NavigationService.openSessionIndications()
-        ),
-
-        const Padding(
-          padding: EdgeInsets.only(
-              top: 50,
-              bottom: 20
-          ),
-          child: Center(
-              child: Text('Contáctanos',
-                style:TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold
-                ),
-              )
-          ),
-        ),
-
-        ListView(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          padding: const EdgeInsets.only(
-            left: 20,
-            right: 20,
-            bottom: 30
-          ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            FilledButton.icon(
-                onPressed: () => NavigationService.makeCall(),
-                icon: const Icon(Icons.phone),
-                label: const Text('Llamada')),
-
             Padding(
-              padding: const EdgeInsets.only(
-                top: 15,
-                bottom: 15
+              padding: EdgeInsets.only(
+                  top: MediaQuery.of(NavigationService.context()).size.height * 0.05,
+                  bottom: 10
               ),
-              child: OutlinedButton.icon(
-                  onPressed: () => NavigationService.openWhatsappLink(),
-                  icon: const Icon(FontAwesomeIcons.whatsapp, color: Colors.green,),
-                  label: const Text('Whatsapp')),
+              child: const Center(
+                  child: Text('Acuerdos',
+                    style:TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold
+                    ),
+                  )
+              ),
             ),
 
-            OutlinedButton.icon(
-                onPressed: () => NavigationService.sendEmail(),
-                icon: const Icon(FontAwesomeIcons.envelope, color: Colors.blue),
-                label: const Text('Correo')),
+            tappableListTileItem(
+                icon: Icons.rule,
+                title: 'Reglamento',
+                action: () => NavigationService.openInternalRegulations()
+            ),
+
+            tappableListTileItem(
+                icon: Icons.help_center,
+                title: 'Indicaciones',
+                action: () => NavigationService.openSessionIndications()
+            ),
+
+            tappableListTileItem(
+                icon: Icons.privacy_tip,
+                title: 'Aviso de Privacidad',
+                action: () => NavigationService.openOnlinePDF(url: 'http://lightcenterclinicas.ddns.net/ImgsRobotWhatsApp/LigthCenterClinicas/Avisodeprivacidad.pdf')
+            ),
+          ],
+        ),
+
+        Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(
+                  top: 50,
+                  bottom: 20
+              ),
+              child: Center(
+                  child: Text('Contáctanos',
+                    style:TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold
+                    ),
+                  )
+              ),
+            ),
+
+            ListView(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              padding: const EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  bottom: 30
+              ),
+              children: [
+                FilledButton.icon(
+                    onPressed: () => NavigationService.makeCall(),
+                    icon: const Icon(Icons.phone),
+                    label: const Text('Llamada')),
+
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 15,
+                      bottom: 15
+                  ),
+                  child: OutlinedButton.icon(
+                      onPressed: () => NavigationService.openWhatsappLink(),
+                      icon: const Icon(FontAwesomeIcons.whatsapp, color: Colors.green,),
+                      label: const Text('Whatsapp')),
+                ),
+
+                OutlinedButton.icon(
+                    onPressed: () => NavigationService.sendEmail(),
+                    icon: const Icon(FontAwesomeIcons.envelope, color: Colors.blue),
+                    label: const Text('Correo')),
+              ],
+            ),
+
+            TextButton.icon(
+                onPressed: () {
+                  NavigationService.showAlertDialog(
+                      title: const Text('Cerrar Sesión'),
+                      content: const Text('¿Deseas cerrar tu sesión actual?'),
+                      actions: [
+                        TextButton(
+                            onPressed: () => NavigationService.pop(),
+                            child: const Text('No')
+                        ),
+
+                        TextButton(
+                            onPressed: () async {
+                              final logOutDB = await IsarService.instance.db;
+                              logOutDB.writeTxn(() async {
+                                await logOutDB.treatments.clear();
+                                await logOutDB.users.clear();
+                              });
+                              NavigationService.cleanNavigation(NavigationService.splashScreen);
+                            },
+                            child: const Text('Si',
+                            style: TextStyle(
+                              color: Colors.red
+                            ),)
+                        )
+                      ]
+                  );
+                },
+                icon: const Icon(Icons.logout, color: Colors.red),
+                label: const Text('Cerrar Sesión',
+                  style: TextStyle(
+                    color: Colors.red
+                  )
+                ))
           ],
         )
       ],

@@ -4,7 +4,6 @@ import 'package:light_center/Views/dashboard.dart';
 import 'package:light_center/Views/login.dart';
 import 'package:light_center/Views/home.dart';
 import 'package:light_center/Views/news.dart';
-import 'package:light_center/Views/nutritional_orientation.dart';
 import 'package:light_center/Views/pdf.dart';
 import 'package:light_center/Views/splash.dart';
 import 'package:light_center/Views/treatment_selection.dart';
@@ -33,8 +32,7 @@ class NavigationService {
     dashboardScreen: (context) => const Dashboard(),
     treatmentSelection: (context) => const TreatmentSelection(),
     homeScreen: (context) => const HomePage(),
-    news: (context) => const News(),
-    nutritionalOrientation: (context) =>  const NutritionalOrientation()
+    news: (context) => const News()
   };
 
   static final NavigationService instance = NavigationService._internal();
@@ -135,8 +133,8 @@ class NavigationService {
     }
   }
 
-  static void openWhatsappLink() async {
-    Uri requestUri = Uri.https('wa.me', '/5219995514492');
+  static void openWhatsappLink({String message = ''}) async {
+    Uri requestUri = Uri.https('wa.me', '/5219994916865', {'text': message});
     if (await canLaunchUrl(requestUri)){
       await launchUrl(
           requestUri,
@@ -162,6 +160,14 @@ class NavigationService {
 
   static Future<dynamic> openSessionIndications() async {
     return _navigationKey.currentState!.push(MaterialPageRoute(builder: (context) => const PDFScreen(pdfName: 'Indicaciones para sesiones')));
+  }
+
+  static Future<dynamic> openOnlinePDF({required String url}) async {
+    return _navigationKey.currentState!.push(MaterialPageRoute(builder: (context) => PDFScreen(pdfName: url, isURL: true)));
+  }
+
+  static Future<dynamic> openLoyalty() async {
+    return _navigationKey.currentState!.push(MaterialPageRoute(builder: (context) => const PDFScreen(pdfName: 'Programa de lealtad')));
   }
 
   static void openURL({bool secureConnection = true, required String baseUrl, required String endPoint}) async {

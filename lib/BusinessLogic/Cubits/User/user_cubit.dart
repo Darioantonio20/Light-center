@@ -49,8 +49,6 @@ class UserCubit extends Cubit<UserState> {
         user ??= User();
         user.code = userCode;
         user.name = data['Name'];
-        //user.currentTreatment = data['DesiredTreatment'];
-        //user.appointments = getAppointmentsFromJson(data['Appointments']);
         if (await _repository.updateUser(user)) {
           NavigationService.showSnackBar(message: 'Su código ha sido verificado. Ingresando al sistema...');
 
@@ -353,9 +351,11 @@ class UserCubit extends Cubit<UserState> {
     }
   }
 
-  Future<Map<String, dynamic>> getAppointmentsBySOAP() async {
+  Future<Map<String, dynamic>> getAppointmentsBySOAP({bool withState = true}) async {
     try {
-      emit(UserLoading());
+      if (withState) {
+        emit(UserLoading());
+      }
       User? user = await _repository.getUser();
 
       if (user == null) {
@@ -370,7 +370,11 @@ class UserCubit extends Cubit<UserState> {
         };
       }
       //emit(UserLoaded(user: user));
-      return await _repository.fetchAppointments(user: user).whenComplete(() => emit(UserLoaded(user: user)));
+      return await _repository.fetchAppointments(user: user).whenComplete(() {
+        if (withState) {
+          emit(UserLoaded(user: user));
+        }
+      });
     } catch (e) {
       emit(UserError('Ocurrió un error al obtener las citas agendadas: $e'));
       return {

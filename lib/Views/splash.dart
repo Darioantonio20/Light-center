@@ -55,7 +55,8 @@ class Splash extends StatelessWidget {
 
                       return Center(
                         child: AspectRatio(
-                          aspectRatio: controller.value.aspectRatio,
+                          aspectRatio: 9/16,
+                          //aspectRatio: controller.value.aspectRatio,
                           child: VideoPlayer(controller),
                         ),
                       );
