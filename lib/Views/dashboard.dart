@@ -19,50 +19,6 @@ class Dashboard extends StatelessWidget {
     return Scaffold(
       appBar: commonAppBar(),
       drawer: commonDrawer(),
-      //floatingActionButtonLocation: ExpandableFab.location,
-      /*floatingActionButton: ExpandableFab(
-          distance: 130,
-          overlayStyle: ExpandableFabOverlayStyle(
-              blur: 10
-          ),
-          type: ExpandableFabType.up,
-          openButtonBuilder: RotateFloatingActionButtonBuilder(
-            fabSize: ExpandableFabSize.large,
-            child: const Icon(
-              Icons.quick_contacts_dialer,
-              semanticLabel: 'Ayuda',
-            ),
-            foregroundColor: Colors.deepPurple,
-            shape: const CircleBorder(),
-          ),
-          closeButtonBuilder: DefaultFloatingActionButtonBuilder(
-            child: const Icon(Icons.close),
-            fabSize: ExpandableFabSize.large,
-            shape: const CircleBorder(),
-          ),
-          children: [
-            FloatingActionButton.large(
-              heroTag: 'email',
-              tooltip: 'Enviar correo',
-              onPressed: () => NavigationService.sendEmail(),
-              child: const Icon(FontAwesomeIcons.envelope, color: Colors.blue, size: 50),
-            ),
-
-            FloatingActionButton.large(
-              heroTag: 'whatsapp',
-              tooltip: 'Link de Whatsapp',
-              onPressed: () => NavigationService.openWhatsappLink(),
-              child: const Icon(FontAwesomeIcons.whatsapp, color: Colors.green, size: 50),
-            ),
-
-            FloatingActionButton.large(
-              heroTag: 'telephone',
-              tooltip: 'Llamar',
-              onPressed: () => NavigationService.makeCall(),
-              child: Icon(Icons.phone, color: LightCenterColors.mainPurple, size: 50),
-            ),
-          ]
-      ),*/
       body: BlocBuilder<UserCubit, UserState>(builder: (context, state) {
         if (state is UserUpdated || state is UserSaved) {
           userCubit.getUser();
@@ -84,7 +40,6 @@ class Dashboard extends StatelessWidget {
                     child: Container(
                         decoration: BoxDecoration(
                           color: LightCenterColors.mainPurple.withOpacity(0.9),
-                          //color: Color.fromRGBO(80, 50, 124, 0.75),
                         ),
                         child: Text('Su próxima cita es el día ${state.user.treatments.last.scheduledAppointments!.isNotEmpty ? state.user.treatments.last.scheduledAppointments!.first.jiffyDate : ''}',
                           textAlign: TextAlign.center,
@@ -108,13 +63,6 @@ class Dashboard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          /*const CircleAvatar(
-                            minRadius: 40,
-                            child: Icon(Icons.person,
-                              size: 50,
-                            ),
-                          ),*/
-
                           CircleAvatar(
                             minRadius: MediaQuery.of(context).size.width * 0.1,
                             child: Image.asset("assets/images/icon-512.png", width: MediaQuery.of(context).size.width * 0.2),

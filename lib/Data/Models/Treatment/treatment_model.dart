@@ -11,7 +11,6 @@ class Treatment {
   int? orderId;
   String? name;
   int? availableAppointments;
-  int? appointmentsPerWeek;
   List<Appointment>? scheduledAppointments;
   List<DateRange>? dateRanges;
   List<DateTime>? availableDates;

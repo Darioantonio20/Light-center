@@ -50,11 +50,11 @@
 		<key>UIStatusBarHidden</key>
 		<false/>
 		<key>LSApplicationQueriesSchemes</key>
-        <array>
-          <string>tel</string>
-          <string>http</string>
-          <string>https</string>
-          <string>whatsapp</string>
-        </array>
+		<array>
+			<string>tel</string>
+			<string>http</string>
+			<string>https</string>
+			<string>whatsapp</string>
+		</array>
 	</dict>
 </plist>

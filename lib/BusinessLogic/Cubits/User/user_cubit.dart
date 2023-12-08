@@ -178,17 +178,22 @@ class UserCubit extends Cubit<UserState> {
     }
   }
 
-  Future<bool> scheduleAppointment({required DateTime day}) async {
+  Future<Map<String, dynamic>> scheduleAppointment({required DateTime day}) async {
     try {
       emit(UserLoading());
+
       User? user = await _repository.getUser();
 
       if (user == null) {
-        emit(UserError('El usuario no pudo ser encontrado.'));
-        return false;
+        return {
+          'scheduled': false,
+          'message': 'El usuario no pudo ser encontrado.'
+        };
       } else if (user.whatsappNumber == null || user.code == null || user.location.value == null) {
-        emit(UserError('El usuario no tiene todas sus credenciales.'));
-        return false;
+        return {
+          'scheduled': false,
+          'message': 'El usuario no cuenta con todas sus credenciales.'
+        };
       }
 
       Map<String, dynamic> result =  await _repository.scheduleAppointment(
@@ -196,18 +201,12 @@ class UserCubit extends Cubit<UserState> {
           day: day
       );
 
-      if (result['scheduled'] == true) {
-        emit(UserUpdated());
-        return true;
-      } else {
-        emit(UserError(result['message']));
-       return false;
-      }
+      return result;
     } catch (e) {
-      await NavigationService.showSimpleErrorAlertDialog(
-          title: 'Error al agendar',
-          content: 'Ocurrió un error al agendar la cita: $e.');
-      return false;
+      return {
+        'scheduled': false,
+        'message': 'Ocurrió un error al cancelar la cita: $e.'
+      };
     }
   }
 
@@ -242,18 +241,22 @@ class UserCubit extends Cubit<UserState> {
     }
   }
 
-  Future<bool> cancelAppointment({required Appointment appointment}) async {
+  Future<Map<String, dynamic>> cancelAppointment({required Appointment appointment}) async {
     try {
       emit(UserLoading());
 
       User? user = await _repository.getUser();
 
       if (user == null) {
-        emit(UserError('El usuario no pudo ser encontrado.'));
-        return false;
+        return {
+          'canceled': false,
+          'message': 'El usuario no pudo ser encontrado.'
+        };
       } else if (user.whatsappNumber == null || user.code == null || user.location.value == null) {
-        emit(UserError('El usuario no tiene todas sus credenciales.'));
-        return false;
+        return {
+          'canceled': false,
+          'message': 'El usuario no cuenta con todas sus credenciales.'
+        };
       }
 
       Map<String, dynamic> result =  await _repository.cancelAppointment(
@@ -261,19 +264,12 @@ class UserCubit extends Cubit<UserState> {
           appointment: appointment
       );
 
-      if (result['canceled'] == true) {
-        emit(UserUpdated());
-        return true;
-      } else {
-        emit(UserError(result['message']));
-        return false;
-      }
-
+      return result;
     } catch (e) {
-      await NavigationService.showSimpleErrorAlertDialog(
-          title: 'Error al cancelar',
-          content: 'Ocurrió un error al cancelar la cita: $e.');
-      return false;
+      return {
+        'canceled': false,
+        'message': 'Ocurrió un error al cancelar la cita: $e.'
+      };
     }
   }
 

@@ -72,11 +72,11 @@ dev_dependencies:
 
 flutter_native_splash:
   web: false
-  #image: assets/splash_art_lc.png
-  color: "#FFFFFF"
+  image: assets/images/ic_launcher.png
+  color: "#7653B8"
+  android_gravity: fill
   android_12:
-    #image: assets/splash_art_lc.png
-    color: "#FFFFFF"
+    color: "#7653B8"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -92,3 +92,4 @@ flutter:
     - assets/animation.mp4
     - assets/documents/
     - assets/images/
+    - assets/images/ic_launcher.png

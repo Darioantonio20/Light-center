@@ -17,7 +17,6 @@ class Schedule extends StatelessWidget {
     userCubit = BlocProvider.of<UserCubit>(context);
     userCubit.getAvailableDatesBySOAP();
     Widget? currentScreen;
-    scheduled = false;
 
     return BlocBuilder<UserCubit, UserState>(builder: (context, state) {
       if (state is UserUpdated || state is UserSaved) {
@@ -30,13 +29,8 @@ class Schedule extends StatelessWidget {
       }
 
       if (state is UserLoaded) {
-        if (scheduled == false) {
-          focusedDay = ValueNotifier<DateTime>(DateTime.now());
-          selectedDay = ValueNotifier<DateTime>(DateTime.now());
-        } else {
-          focusedDay = ValueNotifier<DateTime>(state.user.treatments.last.scheduledAppointments!.last.dateTime!);
-          selectedDay = ValueNotifier<DateTime>(state.user.treatments.last.scheduledAppointments!.last.dateTime!);
-        }
+        focusedDay = ValueNotifier<DateTime>(DateTime.now());
+        selectedDay = ValueNotifier<DateTime>(DateTime.now());
 
         availableDates = state.user.treatments.last.availableDates ?? [];
         eventsList = state.user.treatments.last.scheduledAppointments ?? [];
@@ -91,7 +85,11 @@ class Schedule extends StatelessWidget {
 
                     return Container(
                       color: rangeColor,
-                      child: Text(state.user.treatments.last.dateRanges![index].toString()),
+                      child: Text(state.user.treatments.last.dateRanges![index].toString(),
+                        style: const TextStyle(
+                          fontSize: 18
+                        ),
+                      ),
                     );
                   }
                   ),
@@ -109,10 +107,10 @@ class Schedule extends StatelessWidget {
                       startingDayOfWeek: StartingDayOfWeek.monday,
                       locale: 'es-MX',
                       enabledDayPredicate: (DateTime date) {
-                        return (availableDates.where((element) => isSameDay(element, date)).isNotEmpty || eventsList.where((element) => isSameDay(element.dateTime, date)).isNotEmpty);
+                        //return if (availableDates.where((element) => isSameDay(element, date)).isNotEmpty || eventsList.where((element) => isSameDay(element.dateTime, date)).isNotEmpty);
+                        return availableDates.where((element) => isSameDay(element, date)).isNotEmpty;
                       },
                       eventLoader: (date) {
-                        //return state.user.treatments.last.scheduledAppointments!.where((event) => DateUtils.isSameDay(event.dateTime, date)).toList();
                         return eventsList.where((event) => DateUtils.isSameDay(event.dateTime, date)).toList();
                       },
                       selectedDayPredicate: (day) {
@@ -127,7 +125,6 @@ class Schedule extends StatelessWidget {
                             NavigationService.showSnackBar(message: 'Ocurrió un error al cargar los horarios.');
                           } else {
                             showModal(
-                                context: context,
                                 events: getEventsForDay(),
                                 schedule: daySchedule,
                                 user: state.user
@@ -158,7 +155,11 @@ class Schedule extends StatelessWidget {
       }
 
       if (state is UserError) {
-        currentScreen = errorScreen(context: context, errorMessage: state.errorMessage.toString());
+        currentScreen = errorScreen(context: context, errorMessage: '${state.errorMessage}\n\nRecargando datos...');
+        Future.delayed(
+            const Duration(seconds: 5), () {
+              userCubit.getAvailableDatesBySOAP();
+        });
       }
 
       currentScreen ??= invalidStateScreen(context: context);

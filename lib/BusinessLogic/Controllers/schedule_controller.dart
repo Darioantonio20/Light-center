@@ -8,7 +8,7 @@ import 'package:light_center/Services/network_service.dart';
 import 'package:light_center/Views/custom_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:light_center/colors.dart';
-import 'package:jiffy/jiffy.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 List<Appointment> eventsList = [];
 
@@ -18,16 +18,15 @@ late final ValueNotifier<List<Event>> selectedEvents;
 late ValueNotifier<DateTime?> selectedDay;
 late ValueNotifier<DateTime> focusedDay;
 List<DateTime> availableDates = [];
-late bool scheduled;
 
-void showModal({required BuildContext context, required List<Appointment> events, required List<String> schedule, required User user}) {
+void showModal({required List<Appointment> events, required List<String> schedule, required User user}) {
   showModalBottomSheet<void>(
-    context: context,
+    context: NavigationService.context(),
     isDismissible: false,
     isScrollControlled: true,
     enableDrag: false,
     builder: (BuildContext context) {
-      return eventsModalSheet(context: context, selectedDay: selectedDay.value!, events: eventsList, schedule: schedule, user: user);
+      return eventsModalSheet(selectedDay: selectedDay.value!, events: eventsList, schedule: schedule, user: user);
     },
   );
 }
@@ -77,21 +76,19 @@ Future<List<String>> getDaySchedule({required DateTime day, required User user})
   }
 }
 
-Future<void> scheduleAppointment({required BuildContext context, required DateTime day, required User user}) async {
-  int appointmentsInWeek = 0;
-
+Future<void> scheduleAppointment({required DateTime day, required User user}) async {
   for (Appointment appointment in user.treatments.last.scheduledAppointments!) {
     DateTime appointmentAsDT = appointment.dateTime!;
 
     if (DateUtils.isSameDay(appointmentAsDT, day)) {
       await showDialog(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
+        context: NavigationService.context(),
+        builder: (BuildContext innerContext) => AlertDialog(
           title: const Text('Seleccione otra fecha'),
           content: const Text('No se puede agendar más de una cita por día'),
           actions: <Widget>[
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(innerContext),
               child: Text('Ok',
                 style: TextStyle(
                     color: LightCenterColors.mainPurple
@@ -103,100 +100,75 @@ Future<void> scheduleAppointment({required BuildContext context, required DateTi
       );
       return;
     }
-
-    if (Jiffy.parseFromDateTime(appointmentAsDT).weekOfYear == Jiffy.parseFromDateTime(day).weekOfYear){
-      appointmentsInWeek += 1;
-    }
   }
 
-  if (appointmentsInWeek < (user.treatments.last.appointmentsPerWeek ?? 1)) {
-    await showDialog(
-      barrierDismissible: false,
-      context: NavigationService.context(),
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('¿Agendar cita?'),
-        content: Text('¿Deseas la cita para el ${DateFormat.yMMMMd('es-MX').format(day)} a la(s) ${DateFormat.jm().format(day)}?'),
-        actions: <Widget>[
-          TextButton(
-            //onPressed: () => Navigator.pop(context),
-            onPressed: () => NavigationService.pop(),
-            child: const Text('No',
-              style: TextStyle(
-                  color: Colors.red
-              ),
+  await showDialog(
+    barrierDismissible: false,
+    context: NavigationService.context(),
+    builder: (BuildContext innerContext) => AlertDialog(
+      title: const Text('¿Agendar cita?'),
+      content: Text('¿Deseas la cita para el ${DateFormat.yMMMMd('es-MX').format(day)} a la(s) ${DateFormat.jm().format(day)}?'),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(innerContext),
+          child: const Text('No',
+            style: TextStyle(
+                color: Colors.red
             ),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              bool scheduleResult = await userCubit.scheduleAppointment(day: day);
-              scheduled = true;
+        ),
+        TextButton(
+          onPressed: () async {
+            Navigator.pop(innerContext);
+            Map<String, dynamic> scheduleResult = await userCubit.scheduleAppointment(day: day);
 
-              await showDialog(
-                context: NavigationService.context(),
-                builder: (BuildContext context) => AlertDialog(
-                  title: Text(scheduleResult == true ? 'Éxito al agendar' : 'Error al agendar',
-                    style: TextStyle(
-                      color: scheduleResult ? LightCenterColors.mainPurple : LightCenterColors.mainBrown
-                    ),
+            await showDialog(
+              context: NavigationService.context(),
+              builder: (BuildContext innerContext) => AlertDialog(
+                title: Text(scheduleResult['scheduled'] ? 'Éxito al agendar' : 'Error al agendar',
+                  style: TextStyle(
+                      color: scheduleResult['scheduled'] ? LightCenterColors.mainPurple : LightCenterColors.mainBrown
                   ),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(scheduleResult ? Icons.check : Icons.close,
-                        color: scheduleResult ? Colors.green : Colors.red,
-                        size: 80,
-                      ),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(scheduleResult['scheduled'] ? Icons.check : Icons.close,
+                      color: scheduleResult['scheduled'] ? Colors.green : Colors.red,
+                      size: 80,
+                    ),
 
-                      Text(scheduleResult == true ? 'La cita para el ${DateFormat.yMMMMd('es-MX').format(day)} a la(s) '
-                          '${DateFormat.jm().format(day)}, se agendó exitosamente'
-                          : 'La cita no pudo ser agendada.')
-                    ],
-                  ),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text('Cerrar',
-                        style: TextStyle(
-                            color: LightCenterColors.mainPurple
-                        ),
-                      ),
-                    ),
+                    Text(scheduleResult['message'])
                   ],
                 ),
-              );
-              // Closing modalShow
-              NavigationService.pop();
-              userCubit.emitUpdate();
-            },
-            child: Text('Sí',
-              style: TextStyle(
-                  color: LightCenterColors.mainPurple
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      NavigationService.pop();
+                    },
+                    child: Text('Cerrar',
+                      style: TextStyle(
+                          color: LightCenterColors.mainPurple
+                      ),
+                    ),
+                  ),
+                ],
               ),
+            );
+            // Closing modalShow
+            NavigationService.pop();
+            await userCubit.getAvailableDatesBySOAP();
+            focusedDay.value = day;
+          },
+          child: Text('Sí',
+            style: TextStyle(
+                color: LightCenterColors.mainPurple
             ),
           ),
-        ],
-      ),
-    );
-  } else {
-    showDialog(
-      context: NavigationService.context(),
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Límite alcanzado'),
-        content: Text('Ya tienes agendadas $appointmentsInWeek citas en esta semana, el límite por semana es de ${user.treatments.last.appointmentsPerWeek}'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Ok',
-              style: TextStyle(
-                  color: LightCenterColors.mainPurple
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 }
 
 void manageScheduledAppointment({required BuildContext context, required DateTime scheduledDate, required User user}){
@@ -215,8 +187,11 @@ void manageScheduledAppointment({required BuildContext context, required DateTim
           ),
         ),
         TextButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
+            await userCubit.cancelAppointment(
+                appointment: user.treatments.last.scheduledAppointments!.where((element) => isSameDay(element.dateTime, scheduledDate) && element.dateTime!.hour == scheduledDate.hour).first
+            );
             //cancelAppointment(context: context, day: scheduledDate, user: user);
           },
           child: const Text('Cancelar',

@@ -45,8 +45,8 @@ class Login extends StatelessWidget {
               await userCubit.getAppointmentsBySOAP(withState: false);
               await NavigationService.pushReplacementNamed(NavigationService.dashboardScreen);
             } else {
-              await NavigationService.showSimpleErrorAlertDialog(title: 'Error al iniciar sesión', content: value['message']);
               await userCubit.removeUserCode();
+              await NavigationService.showSimpleErrorAlertDialog(title: 'Error al iniciar sesión', content: value['message']);
             }
           });
           //validateUser(user: state.user);

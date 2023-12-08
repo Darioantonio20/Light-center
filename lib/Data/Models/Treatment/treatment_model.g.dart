@@ -17,54 +17,49 @@ const TreatmentSchema = CollectionSchema(
   name: r'Treatment',
   id: -2494921379818073871,
   properties: {
-    r'appointmentsPerWeek': PropertySchema(
-      id: 0,
-      name: r'appointmentsPerWeek',
-      type: IsarType.long,
-    ),
     r'availableAppointments': PropertySchema(
-      id: 1,
+      id: 0,
       name: r'availableAppointments',
       type: IsarType.long,
     ),
     r'availableDates': PropertySchema(
-      id: 2,
+      id: 1,
       name: r'availableDates',
       type: IsarType.dateTimeList,
     ),
     r'dateRanges': PropertySchema(
-      id: 3,
+      id: 2,
       name: r'dateRanges',
       type: IsarType.objectList,
       target: r'DateRange',
     ),
     r'firstDateToSchedule': PropertySchema(
-      id: 4,
+      id: 3,
       name: r'firstDateToSchedule',
       type: IsarType.dateTime,
     ),
     r'lastDateToSchedule': PropertySchema(
-      id: 5,
+      id: 4,
       name: r'lastDateToSchedule',
       type: IsarType.dateTime,
     ),
     r'name': PropertySchema(
-      id: 6,
+      id: 5,
       name: r'name',
       type: IsarType.string,
     ),
     r'orderId': PropertySchema(
-      id: 7,
+      id: 6,
       name: r'orderId',
       type: IsarType.long,
     ),
     r'productId': PropertySchema(
-      id: 8,
+      id: 7,
       name: r'productId',
       type: IsarType.long,
     ),
     r'scheduledAppointments': PropertySchema(
-      id: 9,
+      id: 8,
       name: r'scheduledAppointments',
       type: IsarType.objectList,
       target: r'Appointment',
@@ -150,22 +145,21 @@ void _treatmentSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeLong(offsets[0], object.appointmentsPerWeek);
-  writer.writeLong(offsets[1], object.availableAppointments);
-  writer.writeDateTimeList(offsets[2], object.availableDates);
+  writer.writeLong(offsets[0], object.availableAppointments);
+  writer.writeDateTimeList(offsets[1], object.availableDates);
   writer.writeObjectList<DateRange>(
-    offsets[3],
+    offsets[2],
     allOffsets,
     DateRangeSchema.serialize,
     object.dateRanges,
   );
-  writer.writeDateTime(offsets[4], object.firstDateToSchedule);
-  writer.writeDateTime(offsets[5], object.lastDateToSchedule);
-  writer.writeString(offsets[6], object.name);
-  writer.writeLong(offsets[7], object.orderId);
-  writer.writeLong(offsets[8], object.productId);
+  writer.writeDateTime(offsets[3], object.firstDateToSchedule);
+  writer.writeDateTime(offsets[4], object.lastDateToSchedule);
+  writer.writeString(offsets[5], object.name);
+  writer.writeLong(offsets[6], object.orderId);
+  writer.writeLong(offsets[7], object.productId);
   writer.writeObjectList<Appointment>(
-    offsets[9],
+    offsets[8],
     allOffsets,
     AppointmentSchema.serialize,
     object.scheduledAppointments,
@@ -179,23 +173,22 @@ Treatment _treatmentDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Treatment();
-  object.appointmentsPerWeek = reader.readLongOrNull(offsets[0]);
-  object.availableAppointments = reader.readLongOrNull(offsets[1]);
-  object.availableDates = reader.readDateTimeList(offsets[2]);
+  object.availableAppointments = reader.readLongOrNull(offsets[0]);
+  object.availableDates = reader.readDateTimeList(offsets[1]);
   object.dateRanges = reader.readObjectList<DateRange>(
-    offsets[3],
+    offsets[2],
     DateRangeSchema.deserialize,
     allOffsets,
     DateRange(),
   );
-  object.firstDateToSchedule = reader.readDateTimeOrNull(offsets[4]);
+  object.firstDateToSchedule = reader.readDateTimeOrNull(offsets[3]);
   object.id = id;
-  object.lastDateToSchedule = reader.readDateTimeOrNull(offsets[5]);
-  object.name = reader.readStringOrNull(offsets[6]);
-  object.orderId = reader.readLongOrNull(offsets[7]);
-  object.productId = reader.readLongOrNull(offsets[8]);
+  object.lastDateToSchedule = reader.readDateTimeOrNull(offsets[4]);
+  object.name = reader.readStringOrNull(offsets[5]);
+  object.orderId = reader.readLongOrNull(offsets[6]);
+  object.productId = reader.readLongOrNull(offsets[7]);
   object.scheduledAppointments = reader.readObjectList<Appointment>(
-    offsets[9],
+    offsets[8],
     AppointmentSchema.deserialize,
     allOffsets,
     Appointment(),
@@ -213,27 +206,25 @@ P _treatmentDeserializeProp<P>(
     case 0:
       return (reader.readLongOrNull(offset)) as P;
     case 1:
-      return (reader.readLongOrNull(offset)) as P;
-    case 2:
       return (reader.readDateTimeList(offset)) as P;
-    case 3:
+    case 2:
       return (reader.readObjectList<DateRange>(
         offset,
         DateRangeSchema.deserialize,
         allOffsets,
         DateRange(),
       )) as P;
+    case 3:
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 4:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 5:
-      return (reader.readDateTimeOrNull(offset)) as P;
-    case 6:
       return (reader.readStringOrNull(offset)) as P;
+    case 6:
+      return (reader.readLongOrNull(offset)) as P;
     case 7:
       return (reader.readLongOrNull(offset)) as P;
     case 8:
-      return (reader.readLongOrNull(offset)) as P;
-    case 9:
       return (reader.readObjectList<Appointment>(
         offset,
         AppointmentSchema.deserialize,
@@ -337,80 +328,6 @@ extension TreatmentQueryWhere
 
 extension TreatmentQueryFilter
     on QueryBuilder<Treatment, Treatment, QFilterCondition> {
-  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
-      appointmentsPerWeekIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'appointmentsPerWeek',
-      ));
-    });
-  }
-
-  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
-      appointmentsPerWeekIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'appointmentsPerWeek',
-      ));
-    });
-  }
-
-  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
-      appointmentsPerWeekEqualTo(int? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'appointmentsPerWeek',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
-      appointmentsPerWeekGreaterThan(
-    int? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'appointmentsPerWeek',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
-      appointmentsPerWeekLessThan(
-    int? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'appointmentsPerWeek',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
-      appointmentsPerWeekBetween(
-    int? lower,
-    int? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'appointmentsPerWeek',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
   QueryBuilder<Treatment, Treatment, QAfterFilterCondition>
       availableAppointmentsIsNull() {
     return QueryBuilder.apply(this, (query) {
@@ -1383,19 +1300,6 @@ extension TreatmentQueryLinks
 }
 
 extension TreatmentQuerySortBy on QueryBuilder<Treatment, Treatment, QSortBy> {
-  QueryBuilder<Treatment, Treatment, QAfterSortBy> sortByAppointmentsPerWeek() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'appointmentsPerWeek', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Treatment, Treatment, QAfterSortBy>
-      sortByAppointmentsPerWeekDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'appointmentsPerWeek', Sort.desc);
-    });
-  }
-
   QueryBuilder<Treatment, Treatment, QAfterSortBy>
       sortByAvailableAppointments() {
     return QueryBuilder.apply(this, (query) {
@@ -1475,19 +1379,6 @@ extension TreatmentQuerySortBy on QueryBuilder<Treatment, Treatment, QSortBy> {
 
 extension TreatmentQuerySortThenBy
     on QueryBuilder<Treatment, Treatment, QSortThenBy> {
-  QueryBuilder<Treatment, Treatment, QAfterSortBy> thenByAppointmentsPerWeek() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'appointmentsPerWeek', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Treatment, Treatment, QAfterSortBy>
-      thenByAppointmentsPerWeekDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'appointmentsPerWeek', Sort.desc);
-    });
-  }
-
   QueryBuilder<Treatment, Treatment, QAfterSortBy>
       thenByAvailableAppointments() {
     return QueryBuilder.apply(this, (query) {
@@ -1580,13 +1471,6 @@ extension TreatmentQuerySortThenBy
 extension TreatmentQueryWhereDistinct
     on QueryBuilder<Treatment, Treatment, QDistinct> {
   QueryBuilder<Treatment, Treatment, QDistinct>
-      distinctByAppointmentsPerWeek() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'appointmentsPerWeek');
-    });
-  }
-
-  QueryBuilder<Treatment, Treatment, QDistinct>
       distinctByAvailableAppointments() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'availableAppointments');
@@ -1637,13 +1521,6 @@ extension TreatmentQueryProperty
   QueryBuilder<Treatment, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
-    });
-  }
-
-  QueryBuilder<Treatment, int?, QQueryOperations>
-      appointmentsPerWeekProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'appointmentsPerWeek');
     });
   }
 

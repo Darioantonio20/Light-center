@@ -37,7 +37,7 @@ class TreatmentSelection extends StatelessWidget {
               bloc: userCubit,
               builder: (context, state) {
                 if (state is UserUpdated || state is UserSaved) {
-                  treatmentCubit.getTreatments();
+                  userCubit.getUser();
                   return updatingScreen(context: context);
                 }
 
@@ -46,9 +46,6 @@ class TreatmentSelection extends StatelessWidget {
                 }
 
                 if (state is UserLoaded) {
-                  //treatmentsList = state.user.treatments.load();
-                  //state.user.treatments
-
                   args.isar.treatments.where().findAll().then((value) => treatmentsList = value);
 
                   return GridView.builder(

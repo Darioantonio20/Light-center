@@ -75,7 +75,6 @@ class MyAppointments extends StatelessWidget {
                             style: FilledButton.styleFrom(
                                 backgroundColor: Colors.red),
                             onPressed: () => cancelAppointment(
-                                context: context,
                                 appointment: state.user.treatments.last
                                     .scheduledAppointments![index]),
                             child: const Text('Cancelar')))
@@ -89,7 +88,6 @@ class MyAppointments extends StatelessWidget {
                   trailing: FilledButton(
                       style: FilledButton.styleFrom(backgroundColor: Colors.red),
                       onPressed: () => cancelAppointment(
-                          context: context,
                           appointment: state.user.treatments.last
                               .scheduledAppointments![index]),
                       child: const Text('Cancelar')));
@@ -103,7 +101,11 @@ class MyAppointments extends StatelessWidget {
 
       if (state is UserError) {
         currentScreen = errorScreen(
-            context: context, errorMessage: state.errorMessage.toString());
+            context: context, errorMessage: '${state.errorMessage}\n\nRecargando datos...');
+        Future.delayed(
+            const Duration(seconds: 5), () {
+          userCubit.getAppointmentsBySOAP();
+        });
       }
 
       currentScreen ??= invalidStateScreen(context: context);

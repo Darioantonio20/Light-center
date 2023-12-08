@@ -293,10 +293,10 @@ SizedBox invalidScreen({required BuildContext context}) {
   );
 }
 
-SizedBox eventsModalSheet({required BuildContext context, required DateTime selectedDay, required List<Appointment> events, required List<String> schedule, required User user}) {
+SizedBox eventsModalSheet({required DateTime selectedDay, required List<Appointment> events, required List<String> schedule, required User user}) {
   events = events.where((event) => DateUtils.isSameDay(event.dateTime, selectedDay)).toList();
   return SizedBox(
-    height: MediaQuery.of(context).size.height * 0.6,
+    height: MediaQuery.of(NavigationService.context()).size.height * 0.6,
     child: SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -319,7 +319,7 @@ SizedBox eventsModalSheet({required BuildContext context, required DateTime sele
                 const Spacer(),
                 Flexible(
                   child: IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => NavigationService.pop(),
                       icon: Icon(Icons.close, color: LightCenterColors.mainPurple)),
                 )
               ],
@@ -331,7 +331,7 @@ SizedBox eventsModalSheet({required BuildContext context, required DateTime sele
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 20.0),
                 child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.9,
+                  width: MediaQuery.of(NavigationService.context()).size.width * 0.9,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -354,7 +354,7 @@ SizedBox eventsModalSheet({required BuildContext context, required DateTime sele
           ),
 
           SizedBox(
-            width: MediaQuery.of(context).size.width * 0.9,
+            width: MediaQuery.of(NavigationService.context()).size.width * 0.9,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -382,7 +382,7 @@ SizedBox eventsModalSheet({required BuildContext context, required DateTime sele
             ),
             child: ElevatedButton(
               child: const Text('Cerrar horario'),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => NavigationService.pop(),
             ),
           ),
         ],
@@ -420,7 +420,7 @@ GridView getScheduleGrid({required List<dynamic> schedule, required DateTime sel
                 if(schedule.runtimeType == List<Appointment>) {
                   manageScheduledAppointment(context: context, scheduledDate: currentDateTime, user: user);
                 } else {
-                  await scheduleAppointment(context: context, day: currentDateTime, user: user);
+                  await scheduleAppointment(day: currentDateTime, user: user);
                 }
               },
               child: Text(

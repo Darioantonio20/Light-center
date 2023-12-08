@@ -29,15 +29,15 @@ List<Widget> scheduledAppointmentsList(List<String> appointmentsList) {
   return scheduledAppointmentsList;
 }
 
-void cancelAppointment({required BuildContext context, required Appointment appointment}) {
+void cancelAppointment({required Appointment appointment}) {
   showDialog(
-    context: context,
+    context: NavigationService.context(),
     builder: (BuildContext context) => AlertDialog(
       title: const Text('¿Cancelar cita?'),
       content: Text('¿Deseas cancelar la cita agendada el ${appointment.jiffyDate} a la(s) ${appointment.jiffyTime}?'),
       actions: <Widget>[
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => NavigationService.pop(),
           child: Text('No',
             style: TextStyle(
                 color: LightCenterColors.mainPurple
@@ -47,28 +47,29 @@ void cancelAppointment({required BuildContext context, required Appointment appo
         TextButton(
           onPressed: () async {
             NavigationService.pop();
-            bool cancelResult = await userCubit.cancelAppointment(appointment: appointment);
+            Map<String, dynamic> cancelResult = await userCubit.cancelAppointment(appointment: appointment);
             await NavigationService.showAlertDialog(
-                title: Text(cancelResult == true ? 'Éxito al cancelar' : 'Error al cancelar',
+                title: Text(cancelResult['canceled'] ? 'Éxito al cancelar' : 'Error al cancelar',
                     style: TextStyle(
-                        color: cancelResult ? LightCenterColors.mainPurple : LightCenterColors.mainBrown
+                        color: cancelResult['canceled'] ? LightCenterColors.mainPurple : LightCenterColors.mainBrown
                     )
                 ),
                 content: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(cancelResult ? Icons.check : Icons.close,
-                        color: cancelResult ? Colors.green : Colors.red,
+                      Icon(cancelResult['canceled'] ? Icons.check : Icons.close,
+                        color: cancelResult['canceled'] ? Colors.green : Colors.red,
                         size: 80,
                       ),
 
-                      Text(cancelResult == true ? 'La cita para del ${appointment.jiffyDate} a la(s) '
-                          '${appointment.jiffyTime}, se canceló exitosamente'
-                          : 'La cita no pudo ser cancelada.')
+                      Text(cancelResult['message'])
                     ]),
                 actions: <Widget>[
                   TextButton(
-                    onPressed: () => NavigationService.pop(),
+                    onPressed: () {
+                      NavigationService.pop();
+                      userCubit.getAppointmentsBySOAP();
+                    },
                     child: Text('Cerrar',
                       style: TextStyle(
                           color: LightCenterColors.mainPurple
@@ -77,7 +78,6 @@ void cancelAppointment({required BuildContext context, required Appointment appo
                   ),
                 ]
             );
-            userCubit.emitUpdate();
           },
           child: const Text('Sí',
             style: TextStyle(

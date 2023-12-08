@@ -134,8 +134,10 @@ class UserRepository {
         }
     );
 
-    if (data.contains('ERR:') || data.length <= 1) {
-      if (data.length == 1) {
+    print(data);
+
+    if (data.contains('ERR:') || data.isEmpty) {
+      if (data.isEmpty) {
         data = 'La cita no pudo ser agendada.';
       } else {
         data = data.replaceAll("ERR: ", "");
@@ -146,13 +148,12 @@ class UserRepository {
         'message': data
       };
     } else {
-
       user.treatments.last.availableAppointments = int.parse(data);
       await isar.writeTxn(() => isar.treatments.put(user.treatments.last));
       await user.treatments.save();
       return {
         'scheduled': true,
-        'message:': 'La cita fue agendada exitosamente. Te quedan ${user.treatments.last.availableAppointments ?? 0} citas por agendar.'
+        'message': 'La cita para el ${Jiffy.parseFromDateTime(day).yMMMMd} a la(s) ${Jiffy.parseFromDateTime(day).jm}, se agendó exitosamente. Te queda(n) ${user.treatments.last.availableAppointments ?? 0} cita(s) por agendar.'
       };
     }
   }
@@ -197,11 +198,7 @@ class UserRepository {
     } else {
       if (data.contains('Ok')) {
         user.treatments.last.availableAppointments = user.treatments.last.availableAppointments! + 1;
-        if (user.treatments.last.scheduledAppointments!.length > 1) {
-          user.treatments.last.scheduledAppointments!.remove(appointment);
-        } else {
-          user.treatments.last.scheduledAppointments = [];
-        }
+        user.treatments.last.scheduledAppointments = [];
         await isar.writeTxn(() => isar.treatments.put(user.treatments.last));
         await user.treatments.save();
         return {
@@ -434,6 +431,7 @@ class UserRepository {
       dates.sort((a,b) => a.compareTo(b));
 
       List<DateRange> dateRanges = [];
+      user.treatments.last.availableAppointments ??= 0;
 
       if (rangesString.isNotEmpty) {
         for (String range in rangesString.split(",")) {
@@ -443,6 +441,11 @@ class UserRepository {
                   endDate: Jiffy.parse(range.substring(range.indexOf('-') + 1, range.indexOf('_')), pattern: 'dd/MM/yyyy').dateTime,
                   availableSchedules: int.parse(range.substring(range.indexOf('_') + 1)))
           );
+          if (user.treatments.last.availableAppointments != null) {
+            user.treatments.last.availableAppointments = user.treatments.last.availableAppointments! + int.parse(range.substring(range.indexOf('_') + 1));
+          } else {
+            user.treatments.last.availableAppointments = int.parse(range.substring(range.indexOf('_') + 1));
+          }
         }
       }
 
