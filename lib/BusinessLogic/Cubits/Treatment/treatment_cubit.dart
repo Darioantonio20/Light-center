@@ -1,8 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:light_center/Data/Repositories/treatment_repository.dart';
-import 'package:light_center/Data/Repositories/user_repository.dart';
 import 'package:light_center/Data/Models/Treatment/treatment_model.dart';
-import 'package:light_center/Data/Models/User/user_model.dart';
 
 part 'treatment_state.dart';
 

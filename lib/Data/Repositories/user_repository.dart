@@ -134,8 +134,6 @@ class UserRepository {
         }
     );
 
-    print(data);
-
     if (data.contains('ERR:') || data.isEmpty) {
       if (data.isEmpty) {
         data = 'La cita no pudo ser agendada.';
@@ -203,13 +201,13 @@ class UserRepository {
         await user.treatments.save();
         return {
           'canceled': true,
-          'message:': 'La cita fue cancelada exitosamente.'
+          'message': 'La cita fue cancelada exitosamente.'
         };
       }
 
       return {
         'canceled': false,
-        'message:': 'La cita no pudo ser cancelada.'
+        'message': 'La cita no pudo ser cancelada.'
       };
     }
   }
@@ -334,11 +332,16 @@ class UserRepository {
     );
 
     if (data.contains('ERR:') || data.length <= 1) {
+
       if (data.length == 1) {
         data = 'No cuenta con ninguna cita agendada.';
       } else {
         data = data.replaceAll("ERR: ", "");
       }
+
+      user.treatments.last.scheduledAppointments = [];
+      await isar.writeTxn(() => isar.treatments.put(user.treatments.last));
+      await user.treatments.save();
 
       return {
         'updated': false,
@@ -405,12 +408,8 @@ class UserRepository {
       String rangesString = '';
       if (data.contains('€')) {
         List<String> datesAux = data.split('€');
-        datesString = datesAux[0].substring(0, data.lastIndexOf(","));
-        if (datesAux[1].contains(',')) {
-          rangesString = datesAux[1].substring(0, data.lastIndexOf(","));
-        } else {
-          rangesString = datesAux[1];
-        }
+        datesString = datesAux[0].substring(0, datesAux[0].lastIndexOf(","));
+        rangesString = datesAux[1];
       } else {
         datesString = data.substring(0, data.lastIndexOf(","));
       }

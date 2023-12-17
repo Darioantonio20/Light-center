@@ -72,27 +72,35 @@ class Schedule extends StatelessWidget {
 
             Visibility(
               visible: state.user.treatments.last.dateRanges!.isNotEmpty,
-              child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: state.user.treatments.last.dateRanges!.length,
-                  itemBuilder: (context, index) {
-                    late Color rangeColor;
-                    if (index % 2 == 0) {
-                      rangeColor = LightCenterColors.backgroundPurple;
-                    } else {
-                      rangeColor = LightCenterColors.backgroundPink;
-                    }
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.1,
+                child: Scrollbar(
+                  trackVisibility: true,
+                  thumbVisibility: true,
+                  child: ListView.builder(
+                      physics: const ClampingScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: state.user.treatments.last.dateRanges!.length,
+                      itemBuilder: (context, index) {
+                        late Color rangeColor;
+                        if (index % 2 == 0) {
+                          rangeColor = LightCenterColors.backgroundPurple;
+                        } else {
+                          rangeColor = LightCenterColors.backgroundPink;
+                        }
 
-                    return Container(
-                      color: rangeColor,
-                      child: Text(state.user.treatments.last.dateRanges![index].toString(),
-                        style: const TextStyle(
-                          fontSize: 18
-                        ),
+                        return Container(
+                          color: rangeColor,
+                          child: Text(state.user.treatments.last.dateRanges![index].toString(),
+                            style: const TextStyle(
+                              fontSize: 18
+                            ),
+                          ),
+                        );
+                      }
                       ),
-                    );
-                  }
-                  ),
+                ),
+              ),
             ),
 
             Padding(

@@ -205,7 +205,7 @@ class UserCubit extends Cubit<UserState> {
     } catch (e) {
       return {
         'scheduled': false,
-        'message': 'Ocurrió un error al cancelar la cita: $e.'
+        'message': 'Ocurrió un error al agendar la cita: ${e.toString()}.'
       };
     }
   }
