@@ -29,11 +29,16 @@ class Schedule extends StatelessWidget {
       }
 
       if (state is UserLoaded) {
-        focusedDay = ValueNotifier<DateTime>(DateTime.now());
-        selectedDay = ValueNotifier<DateTime>(DateTime.now());
-
         availableDates = state.user.treatments.last.availableDates ?? [];
         eventsList = state.user.treatments.last.scheduledAppointments ?? [];
+
+        if (availableDates.isNotEmpty) {
+          focusedDay = ValueNotifier<DateTime>(availableDates.first);
+          selectedDay = ValueNotifier<DateTime>(availableDates.first);
+        } else {
+          focusedDay = ValueNotifier<DateTime>(DateTime.now());
+          selectedDay = ValueNotifier<DateTime>(DateTime.now());
+        }
 
         if (availableDates.isEmpty) {
           return Center(
@@ -154,6 +159,25 @@ class Schedule extends StatelessWidget {
                           todayDecoration: BoxDecoration(
                               color: LightCenterColors.backgroundPurple,
                               shape: BoxShape.circle)
+                      ),
+                      calendarBuilders: CalendarBuilders(
+                          defaultBuilder: (context, day, focusedDay) {
+                            if (availableDates.any((availableDate) => isSameDay(availableDate, day))) {
+                              return Container(
+                                margin: const EdgeInsets.all(4.0),
+                                alignment: Alignment.center,
+                                decoration: const BoxDecoration(
+                                  color: Colors.green,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${day.day}',
+                                  style: const TextStyle(color: Colors.white), // Color del texto
+                                ),
+                              );
+                            }
+                            return null;
+                          }
                       ),
                     );
                   }),

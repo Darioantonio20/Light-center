@@ -32,7 +32,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace "chuysoft.lightcenter.light_center"
+    namespace "kranzwide.lightcenter.lightcenter"
     compileSdkVersion flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 

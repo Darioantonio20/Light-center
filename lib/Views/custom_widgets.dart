@@ -53,7 +53,7 @@ AppBar commonAppBar({
           onPressed: () => showAboutDialog(
               context: NavigationService.context(),
               applicationName: 'Light Center',
-              applicationVersion: 'Versión 1.1.0',
+              applicationVersion: 'Versión 1.1.1',
               applicationLegalese: 'Kranzwide Consultive S.A. de C.V.',
               applicationIcon: Image.asset('assets/images/icon-512.png',
                   width: 50,
